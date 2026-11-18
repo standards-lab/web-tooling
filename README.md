@@ -10,8 +10,10 @@ shipped built, with type declarations and no runtime dependency, and is released
 ## Install
 
 Each release is a tag, `v<version>`, of
-[standards-lab/web-tooling](https://github.com/standards-lab/web-tooling). Install it by the tag,
-as a devDependency:
+[standards-lab/web-tooling](https://github.com/standards-lab/web-tooling), whose tree is the
+package as `pnpm pack` builds it: `package.json`, this README, the LICENSE, and `dist/`, the build.
+The build lives only in the tag's tree, so the tag installs with no build step, and its manifest
+has no scripts. Install it by the tag, as a devDependency:
 
 ```
 pnpm add -D github:standards-lab/web-tooling#v0.1.0
@@ -20,7 +22,7 @@ npm install -D --allow-git=root github:standards-lab/web-tooling#v0.1.0
 ```
 
 npm 12 refuses git dependencies unless `--allow-git` allows them; `root` allows the ones the
-project itself declares.
+project itself declares. Each GitHub release also carries the tarball.
 
 ## Use
 
@@ -260,11 +262,43 @@ mise run check     # lint, types, the build, and the unit and browser tiers; rea
 mise run currency  # report every tool, package, and action pin behind its latest
 ```
 
-The check lints with ESLint, Prettier, and shellcheck, type-checks the TypeScript
+The check lints with ESLint, Prettier, shellcheck, and actionlint, type-checks the TypeScript
 sources and the TypeScript tests with tsc, and builds `dist/`. The unit tier tests the server and
-the process helper, the latter through a fixture `mise run` task whose server is a grandchild. The
-browser tier runs the driver, the server, and the
-bin from `dist/` in the pinned chrome-headless-shell.
+the process helper, the latter through a fixture `mise run` task whose server is a grandchild, and
+packs the build to check the pack's shape: the build and nothing else beside the manifest, README,
+and LICENSE, each export's files and the bin packed, the bin executable, and no scripts or runtime
+dependency in the manifest. The browser tier runs the driver, the server, the font sets, and the
+bin from `dist/` in the pinned chrome-headless-shell. CI runs `mise run install` and the check on
+each pull request to main and each push to it.
+
+## Release
+
+A release is a plain `v<version>` tag, cut by hand on main's merge commit once the check is green
+there, the version being the one `package.json` gives and `CHANGELOG.md` has a section for. The
+tag is on a pack commit: a commit whose tree is the pack, the build included, and whose one parent
+is the merge commit, on no branch. From a clean checkout, with the pins installed:
+
+```
+git fetch origin && git switch --detach origin/main
+mise run check
+tag=v$(node -p 'require("./package.json").version')
+scratch=$(mktemp -d)
+pnpm pack --pack-destination "$scratch"
+tar -xzf "$scratch"/*.tgz -C "$scratch"
+# The pack's package/ as a tree, through an index of its own, so the checkout's index and
+# .gitignore (which ignores dist/) play no part; --force keeps any other ignore rule from
+# dropping a file.
+GIT_INDEX_FILE="$scratch/index" git --work-tree="$scratch/package" add --all --force .
+tree=$(GIT_INDEX_FILE="$scratch/index" git write-tree)
+commit=$(git commit-tree "$tree" -p HEAD -m "web-tooling $tag")
+git tag -a "$tag" -m "web-tooling $tag" "$commit"
+git push origin "refs/tags/$tag"
+```
+
+The pushed tag runs the release workflow. It checks that the tag's commit has one parent, on main,
+whose `package.json` version the tag names; runs the check on that parent; packs it and holds the
+tag's tree to the pack, file for file; and creates the GitHub release from the version's
+`CHANGELOG.md` section, with the tarball attached.
 
 ## Provenance
 
