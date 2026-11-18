@@ -11,6 +11,10 @@
       "types": "./dist/browser.d.ts",
       "default": "./dist/browser.js"
     },
+    "./fonts.js": {
+      "types": "./dist/fonts.d.ts",
+      "default": "./dist/fonts.js"
+    },
     "./process.js": {
       "types": "./dist/process.d.ts",
       "default": "./dist/process.js"

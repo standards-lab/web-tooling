@@ -3,7 +3,7 @@
 # web-tooling
 
 The browser-test and screenshot tooling the standards-lab web client repositories share: a driver
-for Chrome over the DevTools Protocol, a page wait, a static server, a process helper that starts
+for Chrome over the DevTools Protocol, a page wait, a pinned DejaVu font set, a static server, a process helper that starts
 any other server, and a screenshot command. It is Node ES modules, written in TypeScript and
 shipped built, with type declarations and no runtime dependency, and is released by git tag.
 
@@ -97,6 +97,42 @@ const app = await start("mise", ["run", "dev"], {
 });
 // ...
 await app.stop();
+```
+
+`./fonts.js` chooses the font set a test file's browser draws in, before the file launches it:
+
+```ts
+useDejaVu(): () => void
+fonts(): Fonts
+```
+
+- By default a browser draws in the machine's fonts, its own fontconfig. `useDejaVu()` chooses a
+  pinned DejaVu set instead: it writes a test-only fontconfig into a scratch directory under
+  `$TMPDIR` and names it in `FONTCONFIG_FILE`, so a browser launched after it sees only the six
+  faces of Ubuntu's fonts-dejavu-core (DejaVu Sans, Sans Mono, and Serif, each regular and bold),
+  and every generic family resolves to DejaVu: `system-ui` and `sans-serif` to DejaVu Sans,
+  `monospace` to DejaVu Sans Mono, and `serif` to DejaVu Serif. It returns the scratch directory's
+  removal, for after the browser closes.
+- The faces come from the directory `DEJAVU_FONTS` names, an unpacked `dejavu-fonts-ttf` release
+  archive, whose `ttf/` holds them; `useDejaVu()` throws when the variable is unset. The package
+  ships no fonts: the consumer pins the archive and names its install, as it names the browser in
+  `BROWSER_EXECUTABLE`. With mise, the consumer takes this repository's `http:dejavu-fonts` pin
+  from `mise.toml`, the release at its sha256, and its browser task passes
+  `DEJAVU_FONTS=$(mise where http:dejavu-fonts)`, as this repository's does.
+- `fonts()` is the set the process draws in: its `name`, and for DejaVu its `families`, `sans`
+  and `mono`, which a test can check a page draws in.
+
+A test file runs a suite in DejaVu by choosing the set before the suite's browser launches, and
+removing it after the browser closes:
+
+```ts
+import { after } from "node:test";
+import { useDejaVu } from "@standards-lab/web-tooling/fonts.js";
+
+// The suite's own after, which closes its browser, is registered first, so it runs first.
+const remove = useDejaVu();
+await import("./layout-suite.ts");
+after(remove);
 ```
 
 `./screenshots.js` holds the screenshot command, `main(argv: string[]): Promise<number>`, which
@@ -234,7 +270,7 @@ bin from `dist/` in the pinned chrome-headless-shell.
 
 The package is seeded by copy from spike-html-apps-tooling at d77877b, itself built on
 spike-html-apps-foundation's scaffold and the spike-html-apps repositories' browser-test and
-screenshot support. Each copied file that takes comments names its source in a provenance line;
+screenshot support, and its font set from spike-html-go-wasm at f026de3. Each copied file that takes comments names its source in a provenance line;
 the JSON files, which take none, have theirs in [`context/README.md`](context/README.md).
 
 ## License
