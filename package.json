@@ -15,10 +15,17 @@
       "types": "./dist/process.d.ts",
       "default": "./dist/process.js"
     },
+    "./screenshots.js": {
+      "types": "./dist/screenshots.d.ts",
+      "default": "./dist/screenshots.js"
+    },
     "./server.js": {
       "types": "./dist/server.d.ts",
       "default": "./dist/server.js"
     }
+  },
+  "bin": {
+    "web-screenshots": "./dist/bin/screenshots.js"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

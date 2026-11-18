@@ -61,7 +61,7 @@ depends = ["build"]
 run = "tsc -p tsconfig.test.json"
 
 [tasks.build]
-description = "Build src/ into dist/: tsc's emit"
+description = "Build src/ into dist/: tsc's emit, the bin made executable"
 run = "scripts/build.sh"
 
 [tasks."test:unit"]

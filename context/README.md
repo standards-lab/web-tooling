@@ -11,7 +11,7 @@ v1.client.stack), and its strategy is `standards-lab/context/web-client.md`. It 
 from spike-html-apps-tooling at d77877b, with the pinned-font-set helper from spike-html-go-wasm, with a provenance line on every copied file; the spike is archived and never a
 dependency. The JSON files, which can hold no comment, carry their provenance here: `package.json`
 is adapted from spike-html-apps-tooling (d77877b): package.json, renamed `@standards-lab/web-tooling`
-at 0.1.0, its pins at their latest, with no screenshots export or bin; `.prettierrc.json` is from
+at 0.1.0, its pins at their latest, its bin named `web-screenshots`; `.prettierrc.json` is from
 spike-html-apps-tooling (d77877b): .prettierrc.json. `pnpm-lock.yaml` is generated, not copied.
 
 ## Capability map

@@ -1,7 +1,7 @@
-// Adapted from spike-html-apps-tooling (d77877b): tsconfig.test.json, with no fixture stub.
+// From spike-html-apps-tooling (d77877b): tsconfig.test.json.
 // The type check of the suite, mise run types:test: the tests and their helpers, which node runs
-// under its type stripping, checked against dist/ as a consumer's code is. checkJs types the one
-// file that stays JavaScript, the lint's config.
+// under its type stripping, checked against dist/ as a consumer's code is. checkJs types the two
+// files that stay JavaScript, the fixture stub, run from a PATH, and the lint's config.
 // Adapted from spike-html-apps-foundation (7e5d6c2): tsconfig.test.json, with checkJs.
 {
   "extends": "./tsconfig.json",
@@ -14,5 +14,5 @@
     "checkJs": true,
     "rootDir": "."
   },
-  "include": ["test/**/*.ts", "eslint.config.js"]
+  "include": ["test/**/*.ts", "test/browser/fixtures/screenshots/stub.js", "eslint.config.js"]
 }
