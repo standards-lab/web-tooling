@@ -4,7 +4,8 @@
 # that pack and the tag to package.json's version, and creates a GitHub release from CHANGELOG.md
 # with the tarball attached.
 # Adapted from spike-html-apps-tooling (d77877b): .github/workflows/release.yml, triggered by the
-# tag a person pushes instead of cutting it on a push to main, its pins at their latest.
+# tag a person pushes instead of cutting it on a push to main, the tag held to a pack commit on
+# main's merge commit, its pins at their latest.
 # Adapted from spike-html-apps-foundation (9c15b8d): .github/workflows/release.yml, renamed.
 name: Release
 
@@ -37,6 +38,13 @@ jobs:
           parents=("${line[@]:1}")
           if [[ ${#parents[@]} -ne 1 ]]; then
             echo "$TAG's commit has ${#parents[@]} parents, not one" >&2
+            exit 1
+          fi
+          # The parent is main's merge commit, so it has two parents of its own.
+          read -r -a line <<< "$(git rev-list --parents -n 1 "${parents[0]}")"
+          grandparents=$(( ${#line[@]} - 1 ))
+          if [[ $grandparents -ne 2 ]]; then
+            echo "$TAG's parent ${parents[0]} has $grandparents parents, not a merge commit's two" >&2
             exit 1
           fi
           if ! git merge-base --is-ancestor "${parents[0]}" origin/main; then

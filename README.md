@@ -295,10 +295,10 @@ git tag -a "$tag" -m "web-tooling $tag" "$commit"
 git push origin "refs/tags/$tag"
 ```
 
-The pushed tag runs the release workflow. It checks that the tag's commit has one parent, on main,
-whose `package.json` version the tag names; runs the check on that parent; packs it and holds the
-tag's tree to the pack, file for file; and creates the GitHub release from the version's
-`CHANGELOG.md` section, with the tarball attached.
+The pushed tag runs the release workflow. It checks that the tag's commit has one parent, a merge
+commit on main, whose `package.json` version the tag names; runs the check on that parent; packs it
+and holds the tag's tree to the pack, file for file; and creates the GitHub release from the
+version's `CHANGELOG.md` section, with the tarball attached.
 
 ## Provenance
 
