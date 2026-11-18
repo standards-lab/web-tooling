@@ -18,6 +18,7 @@ describe("useDejaVu", () => {
     try {
       assert.throws(() => useDejaVu(), /DEJAVU_FONTS names no DejaVu fonts/);
       assert.equal(fonts().name, "the machine's fonts");
+      assert.equal(fonts().families, undefined);
       assert.equal(process.env.FONTCONFIG_FILE, config);
     } finally {
       if (saved !== undefined) process.env.DEJAVU_FONTS = saved;

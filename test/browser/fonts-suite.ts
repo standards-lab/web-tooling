@@ -1,3 +1,5 @@
+// Adapted from spike-html-go-wasm (f026de3): test/browser/site-nav-layout-suite.ts, its drawnIn
+// and its check that the page draws in the set the test file chose.
 // The font set at the package's seam, imported by the package's own name as a consumer imports it:
 // the faces a browser launched in the test file's set draws a page in. fonts.test.ts runs it in the
 // machine's fonts and fonts-dejavu.test.ts in the pinned DejaVu set, which that file chooses
@@ -5,12 +7,11 @@
 // fonts-dejavu-core, whatever the family, weight, or style asked for; every generic family draws
 // in DejaVu; and local() finds the six faces alone, not the archive's others. In the machine's
 // fonts, a family the machine's fontconfig lists outside DejaVu draws in that family.
-// Adapted from spike-html-go-wasm (f026de3): test/browser/site-nav-layout-suite.ts, its drawnIn
-// and its check that the page draws in the set the test file chose.
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { after, before, describe, test } from "node:test";
+
 import { launch } from "@standards-lab/web-tooling/browser.js";
 import type { Browser, Page } from "@standards-lab/web-tooling/browser.js";
 import { fonts } from "@standards-lab/web-tooling/fonts.js";
@@ -170,8 +171,16 @@ after(async () => {
 const { families } = fonts();
 if (families) {
   describe(`the font set, ${fonts().name}`, () => {
-    test(`the set's families are ${families.sans} and ${families.mono}`, () => {
-      assert.deepEqual(families, { sans: "DejaVu Sans", mono: "DejaVu Sans Mono" });
+    test(`the page draws its text in ${families.sans} and its code in ${families.mono}`, async () => {
+      const [sans, mono] = await drawn(["sans-serif", "monospace"]);
+      assert.deepEqual(
+        sans.map(({ familyName }) => familyName),
+        [families.sans],
+      );
+      assert.deepEqual(
+        mono.map(({ familyName }) => familyName),
+        [families.mono],
+      );
     });
 
     test("every generic family draws in its DejaVu family", async () => {
@@ -229,10 +238,6 @@ if (families) {
   });
 } else {
   describe(`the font set, ${fonts().name}`, () => {
-    test("names no families for the page to draw in", () => {
-      assert.equal(fonts().families, undefined);
-    });
-
     const machine = machineFamily();
     test(
       "a family the machine's fontconfig lists outside DejaVu draws in that family",

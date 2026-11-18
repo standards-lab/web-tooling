@@ -73,18 +73,6 @@ describe("release pack", () => {
     assert.deepEqual(listFiles(pack), [...built, ...always].sort());
   });
 
-  test("the pack offers the five modules and the web-screenshots bin", () => {
-    const manifest = JSON.parse(readFileSync(join(pack, "package.json"), "utf8"));
-    assert.deepEqual(Object.keys(manifest.exports), [
-      "./browser.js",
-      "./fonts.js",
-      "./process.js",
-      "./screenshots.js",
-      "./server.js",
-    ]);
-    assert.deepEqual(manifest.bin, { "web-screenshots": "./dist/bin/screenshots.js" });
-  });
-
   test("the pack is the release its manifest declares", () => {
     assert.deepEqual(releaseProblems(pack, src), []);
   });

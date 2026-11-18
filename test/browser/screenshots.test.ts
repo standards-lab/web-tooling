@@ -1,5 +1,5 @@
 // Adapted from spike-html-apps-tooling (d77877b): test/browser/screenshots.test.ts, with the
-// package and the bin by their new names.
+// package and the bin by their new names, and node linked into a stub's PATH, not its directory.
 // The screenshot bin at its seam, a command line: the package's bin, spawned as a child process as
 // a consumer's task runs it, over the fixture description and its pages, which the package's own
 // server serves. Each case reads the exit code, stdout and stderr, the files written, and each
@@ -21,7 +21,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { delimiter, dirname, join } from "node:path";
+import { delimiter, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { after, before, describe, test } from "node:test";
 
@@ -604,8 +604,8 @@ interface Call {
 }
 
 /**
- * A PATH holding the fixture stub under each name, and node's directory, so the bin runs, and
- * nothing else: no real kitten, kitty, or xdg-open. The env gives it, and the stubs' log, which
+ * A PATH holding the fixture stub under each name, and node, so the bin runs, and nothing else: no
+ * real kitten, kitty, or xdg-open, wherever node is installed. The env gives it, and the stubs' log, which
  * calls() reads. `statuses` are the stubs' exit statuses, as STUB_EXIT takes them.
  */
 function stubbed(
@@ -614,10 +614,11 @@ function stubbed(
 ): { env: Record<string, string>; calls: () => Call[] } {
   const dir = scratchDir();
   for (const name of names) symlinkSync(stub, join(dir, name));
+  symlinkSync(process.execPath, join(dir, "node"));
   const log = join(dir, "calls.jsonl");
   return {
     env: {
-      PATH: [dir, dirname(process.execPath)].join(delimiter),
+      PATH: dir,
       STUB_LOG: log,
       STUB_EXIT: JSON.stringify(statuses),
     },
