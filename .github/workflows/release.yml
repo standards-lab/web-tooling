@@ -1,17 +1,24 @@
-# Publishes the release a pushed vX.Y.Z tag cuts. The tag is cut by hand, as README.md's Release
-# gives it: on a pack commit whose tree is the pack and whose one parent is a merge commit on main.
+# Publishes the release a vX.Y.Z tag cuts, dispatched by hand with the tag once it is pushed. The
+# tag is cut by hand, as README.md's Release gives it: on a pack commit whose tree is the pack and
+# whose one parent is a merge commit on main. A tag push can't run it: GitHub reads a tag push's
+# workflows from the tagged tree, which holds only the pack, so it runs from main's copy instead.
 # The workflow runs the check on that parent, which builds dist/, packs it, holds the tag's tree to
 # that pack and the tag to package.json's version, and creates a GitHub release from CHANGELOG.md
 # with the tarball attached.
-# Adapted from spike-html-apps-tooling (d77877b): .github/workflows/release.yml, triggered by the
-# tag a person pushes instead of cutting it on a push to main, the tag held to a pack commit on
-# main's merge commit, its pins at their latest.
+# Adapted from spike-html-apps-tooling (d77877b): .github/workflows/release.yml, dispatched by hand
+# with the tag a person pushes instead of cutting it on a push to main, since a tag push reads its
+# workflows from the tagged tree, the pack; the tag held to a pack commit on main's merge commit,
+# its pins at their latest.
 # Adapted from spike-html-apps-foundation (9c15b8d): .github/workflows/release.yml, renamed.
 name: Release
 
 on:
-  push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The pushed vX.Y.Z tag to release
+        required: true
+        type: string
 
 concurrency:
   group: release
@@ -30,9 +37,14 @@ jobs:
 
       - name: Check out the pack commit's parent, a merge commit on main
         env:
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
+          if [[ ! $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "$TAG isn't a vX.Y.Z tag" >&2
+            exit 1
+          fi
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
           pack=$(git rev-parse "refs/tags/$TAG^{commit}")
           read -r -a line <<< "$(git rev-list --parents -n 1 "$pack")"
           parents=("${line[@]:1}")
@@ -69,7 +81,7 @@ jobs:
       - name: Pack, and hold the tag's tree to the pack
         id: pack
         env:
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
           scratch=$(mktemp -d)
@@ -82,16 +94,18 @@ jobs:
           diff -r "$scratch/package" "$scratch/tagged"
           echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
 
+      # The action releases the tag its ref names, not the dispatching ref, main. It runs gh release
+      # create on that tag with no target, so the release is for the tag fetched and checked above.
       - name: Create the GitHub release
         uses: taiki-e/create-gh-release-action@v1.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           changelog: CHANGELOG.md
-          ref: refs/tags/${{ github.ref_name }}
+          ref: refs/tags/${{ inputs.tag }}
 
       - name: Attach the tarball
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag }}
           TARBALL: ${{ steps.pack.outputs.tarball }}
         run: gh release upload "$TAG" "$TARBALL"
