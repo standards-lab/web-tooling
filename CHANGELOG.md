@@ -40,7 +40,7 @@ All notable changes to `@standards-lab/web-tooling` are documented here. The for
   generic family resolved to DejaVu. The faces come from the `dejavu-fonts-ttf` 2.37 archive
   `DEJAVU_FONTS` names, which a consumer pins as this repository's `http:dejavu-fonts` does.
   `fonts()` names the set the process draws in.
-- The release by tag: `v<version>`, whose tree is the pack, the build included, with the tarball
-  on its GitHub release.
+- Releases by tag: each `v<version>` tag marks a pack commit on main's merge commit, whose tree is
+  the pack, the build included, and its GitHub release carries the tarball.
 
 [0.1.0]: https://github.com/standards-lab/web-tooling/releases/tag/v0.1.0

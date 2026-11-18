@@ -3,9 +3,10 @@
 # web-tooling
 
 The browser-test and screenshot tooling the standards-lab web client repositories share: a driver
-for Chrome over the DevTools Protocol, a page wait, a pinned DejaVu font set, a static server, a process helper that starts
-any other server, and a screenshot command. It is Node ES modules, written in TypeScript and
-shipped built, with type declarations and no runtime dependency, and is released by git tag.
+for Chrome over the DevTools Protocol, a page wait, a pinned DejaVu font set, a static server, a
+process helper that starts any other server, and a screenshot command. It is Node ES modules,
+written in TypeScript and shipped built, with type declarations and no runtime dependency, and is
+released by git tag.
 
 ## Install
 
@@ -273,10 +274,10 @@ each pull request to main and each push to it.
 
 ## Release
 
-A release is a plain `v<version>` tag, cut by hand on main's merge commit once the check is green
-there, the version being the one `package.json` gives and `CHANGELOG.md` has a section for. The
-tag is on a pack commit: a commit whose tree is the pack, the build included, and whose one parent
-is the merge commit, on no branch. From a clean checkout, with the pins installed:
+A release is an annotated `v<version>` tag on a pack commit: a commit, on no branch, whose tree is
+the pack, the build included, and whose one parent is main's merge commit. The version is the one
+`package.json` gives and `CHANGELOG.md` has a section for. A person cuts the tag by hand once the
+check is green on the merge commit, from a clean checkout with the pins installed:
 
 ```
 git fetch origin && git switch --detach origin/main
@@ -304,8 +305,9 @@ version's `CHANGELOG.md` section, with the tarball attached.
 
 The package is seeded by copy from spike-html-apps-tooling at d77877b, itself built on
 spike-html-apps-foundation's scaffold and the spike-html-apps repositories' browser-test and
-screenshot support, and its font set from spike-html-go-wasm at f026de3. Each copied file that takes comments names its source in a provenance line;
-the JSON files, which take none, have theirs in [`context/README.md`](context/README.md).
+screenshot support, and its font set from spike-html-go-wasm at f026de3. Each copied file that
+takes comments names its source in a provenance line; the JSON files, which take none, have theirs
+in [`context/README.md`](context/README.md).
 
 ## License
 
