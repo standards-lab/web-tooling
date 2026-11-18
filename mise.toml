@@ -26,8 +26,9 @@ linux-x64 = { url = "https://storage.googleapis.com/chrome-for-testing-public/{{
 # that shows the browser only the six faces of Ubuntu's fonts-dejavu-core, so a local run never
 # proves a page in the machine's fonts alone. A consumer pins the same tool and names its install
 # in DEJAVU_FONTS, as the browser task does. DejaVu publishes no checksums, so the sha256 and size
-# are taken from the download by hand at each bump; currency reads the release assets' names
-# through mise outdated. The archive's LICENSE holds its license: Bitstream Vera's, with DejaVu's
+# are taken from the download by hand at each bump. currency reads the release assets' names
+# itself, sorted by version, not through mise outdated: mise takes the GitHub API's newest-first
+# order as given, so mise latest names whichever release the API lists last. The archive's LICENSE holds its license: Bitstream Vera's, with DejaVu's
 # changes in the public domain.
 # Adapted from spike-html-go-wasm (f026de3): mise.toml, its http:dejavu-fonts pin, the comment
 # naming src/fonts.ts and a consumer's DEJAVU_FONTS.

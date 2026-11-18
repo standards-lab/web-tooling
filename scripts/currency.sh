@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Adapted from spike-html-apps-tooling (d77877b): scripts/currency.sh, its action pins checked only
-# when a workflow exists.
+# when a workflow exists, and DejaVu's pin read from its release assets in version order.
 # Prints `<where>: <item> <pin> -> <latest>` for each mise tool, package.json dependency, and GitHub
 # Actions pin behind its latest, and exits 1 if any; prints nothing when all are current. Reads the
 # network.
@@ -8,13 +8,25 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# Errors only: mise warns on every run that a GitHub release has no assets.
+# Errors only: mise warns on every run that a GitHub release has no assets. DejaVu is read below
+# instead: mise keeps its version list in the GitHub API's newest-first order, unsorted, so its
+# latest is whichever release the API lists last.
 outdated=$(MISE_LOG_LEVEL=error mise outdated --bump --local --json)
 trailing=$(node -p '
   Object.entries(JSON.parse(process.argv[1]))
+    .filter(([tool]) => tool !== "http:dejavu-fonts")
     .map(([tool, { requested, bump }]) => "mise.toml: " + [tool, requested, "->", bump].join(" "))
     .join("\n")
 ' "$outdated")
+
+# DejaVu's latest is the newest version among its releases' dejavu-fonts-ttf-X.Y.tar.bz2 assets,
+# the archive mise.toml's pin downloads.
+dejavu=$(mise config get 'tools."http:dejavu-fonts".version')
+dejavu_latest=$(gh api --paginate repos/dejavu-fonts/dejavu-fonts/releases --jq '.[].assets[].name' |
+  sed -n 's/^dejavu-fonts-ttf-\([0-9.]*\)\.tar\.bz2$/\1/p' | sort -V | tail -n 1)
+if [[ $dejavu != "$dejavu_latest" ]]; then
+  trailing+=$'\n'"mise.toml: http:dejavu-fonts $dejavu -> $dejavu_latest"
+fi
 
 pins=$(node -p '
   const { dependencies, devDependencies } = require("./package.json");
