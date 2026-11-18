@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# From spike-html-apps-tooling (d77877b): scripts/preflight.sh.
+# Adapted from spike-html-apps-tooling (d77877b): scripts/preflight.sh, with the DejaVu checks.
 # Adapted from spike-html-go-wasm (f026de3): scripts/preflight.sh, its DejaVu checks.
 # Fails naming mise run install when a tool a task needs is missing: the node_modules tooling, and
 # with `browser`, the pinned chrome-headless-shell and the pinned DejaVu fonts, the font set a

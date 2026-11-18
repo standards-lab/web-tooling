@@ -1,19 +1,9 @@
 // Adapted from spike-html-go-wasm (f026de3): test/browser/fonts.ts, as a package export that names
 // the archive's install by DEJAVU_FONTS for any consumer, not the spike's browser task alone.
 // The browser tier's font sets, which a test file chooses before it launches the browser: the
-// machine's, the browser's own fontconfig, by default; or, by useDejaVu(), a pinned DejaVu set, the
-// six faces of Ubuntu's fonts-dejavu-core, so every machine, local or CI, also proves a page in one
-// known font set.
-//
-// DejaVu is the release archive of dejavu-fonts-ttf at a pinned sha256, which the consumer
-// installs (as http:dejavu-fonts in its mise.toml) and names in DEJAVU_FONTS, the archive's
-// install directory, as BROWSER_EXECUTABLE names the browser. The fontconfig useDejaVu() writes is
-// test-only, in a scratch directory under TMPDIR, and lets the browser see nothing but Ubuntu's
-// fonts-dejavu-core set, Sans, Sans Mono, and Serif, each regular and bold, from the archive's
-// ttf/, with every generic family a font stack ends on (system-ui, sans-serif, monospace, serif)
-// resolving to its DejaVu face, as Ubuntu's own configuration resolves them. launch() spawns the
-// browser in the test process's environment, so FONTCONFIG_FILE, set here before the launch, is
-// the browser's.
+// machine's, the browser's own fontconfig, by default; or, by useDejaVu(), the six faces of
+// Ubuntu's fonts-dejavu-core from the dejavu-fonts-ttf archive the consumer pins and names in
+// DEJAVU_FONTS, so every machine, local or CI, also proves a page in one known font set.
 
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -65,9 +55,10 @@ const xml = (text: string) =>
 /**
  * Sets this test process up to draw in DejaVu: writes the test-only fontconfig into a scratch
  * directory, with its cache beside it, and names it in FONTCONFIG_FILE, so a browser launched after
- * this call sees DejaVu's core set alone. Throws when DEJAVU_FONTS is unset; it names the
- * directory of a dejavu-fonts-ttf archive, whose ttf/ holds the faces. Answers the removal of the scratch directory, for after the browser
- * closes.
+ * this call sees DejaVu's core set alone, every generic family resolving to its DejaVu face, as
+ * Ubuntu's own configuration resolves them. Throws when DEJAVU_FONTS is unset; it names the
+ * directory of a dejavu-fonts-ttf archive, whose ttf/ holds the faces. Answers the removal of the
+ * scratch directory, for after the browser closes.
  */
 export function useDejaVu(): () => void {
   const installed = process.env.DEJAVU_FONTS;
@@ -106,6 +97,7 @@ ${aliases}
 </fontconfig>
 `,
   );
+  // launch() spawns the browser in this process's environment, so the browser reads it.
   process.env.FONTCONFIG_FILE = file;
   active = DEJAVU;
   return () => rmSync(dir, { recursive: true, force: true });
