@@ -1,0 +1,97 @@
+# Publishes the release a pushed vX.Y.Z tag cuts. The tag is cut by hand, as README.md's Release
+# gives it: on a pack commit whose tree is the pack and whose one parent is a merge commit on main.
+# The workflow runs the check on that parent, which builds dist/, packs it, holds the tag's tree to
+# that pack and the tag to package.json's version, and creates a GitHub release from CHANGELOG.md
+# with the tarball attached.
+# Adapted from spike-html-apps-tooling (d77877b): .github/workflows/release.yml, triggered by the
+# tag a person pushes instead of cutting it on a push to main, the tag held to a pack commit on
+# main's merge commit, its pins at their latest.
+# Adapted from spike-html-apps-foundation (9c15b8d): .github/workflows/release.yml, renamed.
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+concurrency:
+  group: release
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # Every branch and tag, so the pack commit's parent and main are both at hand.
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Check out the pack commit's parent, a merge commit on main
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          pack=$(git rev-parse "refs/tags/$TAG^{commit}")
+          read -r -a line <<< "$(git rev-list --parents -n 1 "$pack")"
+          parents=("${line[@]:1}")
+          if [[ ${#parents[@]} -ne 1 ]]; then
+            echo "$TAG's commit has ${#parents[@]} parents, not one" >&2
+            exit 1
+          fi
+          # The parent is main's merge commit, so it has two parents of its own.
+          read -r -a line <<< "$(git rev-list --parents -n 1 "${parents[0]}")"
+          grandparents=$(( ${#line[@]} - 1 ))
+          if [[ $grandparents -ne 2 ]]; then
+            echo "$TAG's parent ${parents[0]} has $grandparents parents, not a merge commit's two" >&2
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "${parents[0]}" origin/main; then
+            echo "$TAG's parent ${parents[0]} isn't on main" >&2
+            exit 1
+          fi
+          git switch --detach "${parents[0]}"
+          version=$(jq -r .version package.json)
+          if [[ $TAG != "v$version" ]]; then
+            echo "$TAG doesn't name package.json's version, $version" >&2
+            exit 1
+          fi
+
+      - uses: jdx/mise-action@v5.2.9
+
+      - name: mise run install
+        run: mise run install
+
+      - name: mise run check
+        run: mise run check
+
+      - name: Pack, and hold the tag's tree to the pack
+        id: pack
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          scratch=$(mktemp -d)
+          pnpm pack --pack-destination "$scratch"
+          tarball=$(ls "$scratch"/*.tgz)
+          tar -xzf "$tarball" -C "$scratch"
+          # The tagged tree is the tarball's package/, file for file.
+          mkdir "$scratch/tagged"
+          git archive "refs/tags/$TAG" | tar -x -C "$scratch/tagged"
+          diff -r "$scratch/package" "$scratch/tagged"
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+
+      - name: Create the GitHub release
+        uses: taiki-e/create-gh-release-action@v1.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          changelog: CHANGELOG.md
+          ref: refs/tags/${{ github.ref_name }}
+
+      - name: Attach the tarball
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: gh release upload "$TAG" "$TARBALL"
