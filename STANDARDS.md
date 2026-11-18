@@ -25,8 +25,8 @@ The architecture pages that apply, in the architecture repository:
 - `dist/` lives only in a release tag's tree, the pack, never on a branch.
 - Releases are plain `vX.Y.Z` annotated tags on a pack commit parented on main's merge commit, cut
   by hand on a green check from `package.json`'s version, each with its `CHANGELOG.md` section,
-  and never changed or re-cut; `release.yml` only verifies and publishes the pushed tag
-  (`standards-lab/context/web-client.md`, "Packaging and release").
+  and never changed or re-cut; `release.yml`, dispatched by hand with the pushed tag, only
+  verifies and publishes it (`standards-lab/context/web-client.md`, "Packaging and release").
 
 ## Code
 

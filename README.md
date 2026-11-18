@@ -294,9 +294,12 @@ tree=$(GIT_INDEX_FILE="$scratch/index" git write-tree)
 commit=$(git commit-tree "$tree" -p HEAD -m "web-tooling $tag")
 git tag -a "$tag" -m "web-tooling $tag" "$commit"
 git push origin "refs/tags/$tag"
+gh workflow run release.yml -f tag="$tag"
 ```
 
-The pushed tag runs the release workflow. It checks that the tag's commit has one parent, a merge
+The release workflow is dispatched by hand with the tag, not run by the push: GitHub reads a tag
+push's workflows from the tagged tree, and the pack commit's tree holds only the pack, so the
+workflow runs from main's copy. It checks that the tag's commit has one parent, a merge
 commit on main, whose `package.json` version the tag names; runs the check on that parent; packs it
 and holds the tag's tree to the pack, file for file; and creates the GitHub release from the
 version's `CHANGELOG.md` section, with the tarball attached.
