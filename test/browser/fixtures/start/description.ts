@@ -1,5 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/fixtures/start/description.ts,
-// importing the package by its new name.
+// Adapted from spike-html-apps-tooling (d77877b): test/browser/fixtures/start/description.ts, the package by its new name.
 // The fixture description whose server is a start function: it starts its own http server, which
 // serves two pages under /app/, and resolves to an origin with that base path, so a page the bin
 // opens resolves against the start's origin and no other. The start, the stop, and each request
@@ -15,7 +14,6 @@ import type { Description } from "@standards-lab/web-tooling/screenshots.js";
 const log = (line: string) => appendFileSync(process.env.START_LOG as string, `${line}\n`);
 const mode = process.env.START_MODE ?? "";
 
-/** A page of the fixture's own, by its name. */
 const html = (name: string) => `<!doctype html><title>${name}</title><p>the ${name} page</p>`;
 
 const description: Description = {

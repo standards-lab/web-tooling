@@ -1,12 +1,9 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/release.ts, with each export held to
-// packed files.
+// Adapted from spike-html-apps-tooling (d77877b): test/unit/release.ts, with each export held to packed files.
+// Adapted from spike-html-apps-foundation (9c15b8d): test/unit/release.js, in TypeScript, no export resolution, the manifest held to no scripts or dependencies.
 // A release's shape: a pack of the build checked against the sources, which a tag's tree installs
 // with no build step, its manifest carrying no scripts and no runtime dependency, each export's
 // files packed, its bin executable, and the Apache 2.0 LICENSE it declares.
 // test/unit/release.test.ts runs it on a pnpm pack.
-// Adapted from spike-html-apps-foundation (9c15b8d): test/unit/release.js, in TypeScript, with no
-// export resolution, which the tests' imports by the package's name exercise, its manifest held to
-// no scripts and no dependencies, and its bin to executable.
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
@@ -30,11 +27,9 @@ export function builtFrom(source: string): string[] {
 /** The files every pack carries whatever package.json's files lists. */
 export const always = ["LICENSE", "README.md", "package.json"];
 
-/** The license every release declares, and the text its LICENSE opens with. */
 const license = "Apache-2.0";
 const licenseHeading = /^\s*Apache License\s+Version 2\.0, January 2004\s/;
 
-/** The manifest fields that make an install run or fetch something. */
 const installFields = [
   "scripts",
   "dependencies",
@@ -61,13 +56,10 @@ export function releaseProblems(root: string, src: string): string[] {
     problems.push("LICENSE isn't the Apache License 2.0");
   }
 
-  // An install from the tag runs nothing and fetches nothing: no lifecycle script, such as
-  // prepare, builds it, and no runtime dependency comes with it.
   for (const field of installFields) {
     if (field in manifest) problems.push(`package.json has a ${field} field`);
   }
 
-  // The pack is the build and the files every pack carries, and nothing else.
   const packed = listFiles(root);
   if (!packed.includes("README.md")) problems.push("the pack has no README.md");
   for (const path of packed) {
@@ -76,7 +68,6 @@ export function releaseProblems(root: string, src: string): string[] {
     }
   }
 
-  // The build against the sources: each source's emit is there, and nothing else is.
   const built = packed.filter((path) => path.startsWith("dist/"));
   const expected = new Set<string>();
   for (const source of listFiles(src)) {
@@ -91,7 +82,6 @@ export function releaseProblems(root: string, src: string): string[] {
     if (!expected.has(path)) problems.push(`${path} is built from no source`);
   }
 
-  // Each export's files are packed, so an import by the package's name resolves in the tag's tree.
   const exports: Record<string, Record<string, string>> = manifest.exports ?? {};
   for (const [subpath, conditions] of Object.entries(exports)) {
     for (const target of Object.values(conditions)) {
@@ -101,7 +91,6 @@ export function releaseProblems(root: string, src: string): string[] {
     }
   }
 
-  // Each bin is a built file with its shebang, executable, so the tag's tree runs it as it is.
   const bins: Record<string, string> = manifest.bin ?? {};
   for (const [name, target] of Object.entries(bins)) {
     const path = join(root, target);

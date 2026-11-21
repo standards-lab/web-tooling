@@ -7,7 +7,6 @@ import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
-/** Writes each file under `dir`, by its path, making its directories. */
 function write(dir: string, files: Record<string, string>): void {
   for (const [path, text] of Object.entries(files)) {
     mkdirSync(dirname(join(dir, path)), { recursive: true });
@@ -15,7 +14,6 @@ function write(dir: string, files: Record<string, string>): void {
   }
 }
 
-/** Links `path` under `dir` to `target`, relative as pnpm writes its links. */
 function link(dir: string, path: string, target: string): void {
   mkdirSync(dirname(join(dir, path)), { recursive: true });
   symlinkSync(target, join(dir, path), "dir");
@@ -40,8 +38,6 @@ export function tree(): { root: string; outside: string; remove: () => void } {
     "shell.html": "<title>shell</title>",
     "pages/deep.html": "<title>deep</title>",
   });
-  // The store: alpha, linked from node_modules, with beta and @scope/gamma, its dependencies,
-  // linked beside it, and a file in its store directory, outside every package.
   const modules = join(root, "node_modules");
   const store = join(modules, ".pnpm");
   write(store, {
@@ -62,7 +58,6 @@ export function tree(): { root: string; outside: string; remove: () => void } {
   );
   link(modules, "alpha", ".pnpm/alpha@1.0.0/node_modules/alpha");
   link(modules, "delta", ".pnpm/delta@4.0.0/node_modules/delta");
-  // A package installed flat, as npm installs one, which brings no siblings.
   write(modules, {
     "flat/index.js": 'export const flat = "flat";\n',
     "other/index.js": 'export const other = "other";\n',

@@ -1,7 +1,6 @@
 // From spike-html-apps-tooling (d77877b): tsconfig.json.
-// The build, src/ into dist/: tsc emits each module's .js and .d.ts, rewriting the sources' .ts
-// specifiers to .js. mise run types checks the same sources with --noEmit.
 // Adapted from spike-html-apps-foundation (9c15b8d): tsconfig.json, on node.
+// The build, src/ into dist/, each module's .js and .d.ts; mise run types checks it with --noEmit.
 {
   "compilerOptions": {
     "target": "es2024",

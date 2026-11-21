@@ -1,12 +1,12 @@
-// Adapted from spike-html-apps-tooling (d77877b): src/screenshots.ts, with the bin named
-// web-screenshots.
+// Adapted from spike-html-apps-tooling (d77877b): src/screenshots.ts, the bin named web-screenshots.
+// Adapted from spike-html-apps-components (8ba2be0): scripts/screenshots.js and scripts/screenshots.sh, in TypeScript.
+// Adapted from spike-html-apps-foundation (6e9669f): scripts/screenshots.js and scripts/screenshots.sh, in TypeScript.
+// Adapted from spike-html-apps-noctis (7d7351a): scripts/screenshots.js and scripts/screenshots.sh, in TypeScript.
 // The screenshot command's engine, which bin/screenshots.ts runs: the consumer's description
 // module, the first argument, typed as Description, gives the pages, states, facets, and server,
 // and the flags choose the profiles, pages, schemes, and output. Each capture is a fresh page,
 // rendered and focused by real Tab presses; a full page is cut into tiles.
-// Adapted from spike-html-apps-components (8ba2be0), spike-html-apps-foundation (6e9669f), and
-// spike-html-apps-noctis (7d7351a): scripts/screenshots.js and scripts/screenshots.sh, in
-// TypeScript.
+// See docs/internals.md
 
 import { spawn, spawnSync, type StdioOptions } from "node:child_process";
 import {
@@ -113,87 +113,47 @@ export interface Description {
   server?: Partial<ServeOptions> | Start;
 }
 
-/** The bin's name, which its messages and usage start with. */
 const NAME = "web-screenshots";
-
-/** The schemes, each emulated as prefers-color-scheme and set as the root's data-scheme. */
 const SCHEMES = ["light", "dark"];
-
-/** The ways the captures are shown, the first the default. */
 const OUTPUTS = ["terminal", "directory", "browser"];
+const ICAT_FLAGS = ["--transfer-mode=stream", "--align=left", "--fit=both"];
+const DETECTION_TIMEOUT_S = 3;
+const NVIM_REASON = "inside a Neovim :terminal (no pixel size, graphics not passed through)";
+const RESERVED_FLAGS = ["all", "page", "scheme", "output", "dir", "keep", "help"];
+const HELP_FLAGS = ["--help", "-h"];
+const DEFAULT_VIEWPORT = { width: 1280, height: 800 };
+const TILE_MAX_HEIGHT = 1200;
 
-/** icat's flags for each image the terminal output shows, before the image's path: the data sent
- * in the escape codes, so it reaches a terminal at the far end of a pty, left-aligned, and scaled
- * to fit the screen's width and height. */
-const ICAT = ["--transfer-mode=stream", "--align=left", "--fit=both"];
+const SECTION_SLACK = TILE_MAX_HEIGHT / 4;
+const STATE_SLACK = TILE_MAX_HEIGHT / 2;
 
-/** How long, in seconds, icat's support detection waits for the terminal to answer; the process
- * is killed a little after, so a terminal that never answers can't hang the run. */
-const DETECTION = 3;
-
-/** The fallback's reason inside a Neovim :terminal, whatever check failed: its pty reports no
- * pixel size and libvterm drops the graphics escape codes, so icat's detection fails there. */
-const NVIM = "inside a Neovim :terminal (no pixel size, graphics not passed through)";
-
-/** The flags the bin takes for itself, which no facet may take. */
-const RESERVED = ["all", "page", "scheme", "output", "dir", "keep", "help"];
-
-/** The arguments that ask for the help, wherever they come among the flags. */
-const HELP = ["--help", "-h"];
-
-/** A state's viewport when it names none: a full-page capture is taken at this width. */
-const VIEWPORT = { width: 1280, height: 800 };
-
-/** A tile's greatest height, in CSS px. */
-const TILE = 1200;
-
-/** How far up from a tile's foot a cut may move to a section's top: the tile's last quarter. */
-const SECTION_SLACK = TILE / 4;
-
-/** How far up a cut may move to a state's top, when no section's top is near: the tile's last
- * half, since a state can be taller than a quarter tile, and a narrower window would leave some
- * tiles no state boundary to cut at. */
-const STATE_SLACK = TILE / 2;
-
-/** A capture the engine wrote: its file and its caption. */
 interface Shot {
   path: string;
   caption: string;
 }
 
-/**
- * The files a run writes, into the directory --dir names or a fresh one under TMPDIR, made at the
- * first write, so a run that captures nothing leaves nothing behind. It tracks what it wrote and
- * whether it made the directory, so remove() takes away only what the run added.
- */
 interface Files {
   write(name: string, data: Buffer): string;
   remove(): void;
 }
 
-/**
- * How the captures are shown: each as it is written, then once every capture is, resolving to the
- * run's exit code if not 0; close, if it has one, runs as the run ends, however it ends.
- */
 interface Output {
   show(shot: Shot): void | Promise<void>;
   end(): void | number | Promise<void | number>;
   close?(): void;
 }
 
-/** The run's files, in the directory --dir names, or in a fresh one when dir is undefined. */
 function files(dir: string | undefined): Files {
   let target: string | undefined;
-  /** The topmost directory the run made, which remove() takes away once it is empty. */
-  let made: string | undefined;
+  let topmostMade: string | undefined;
   const written: string[] = [];
   return {
     write(name, data) {
       if (target === undefined) {
-        if (dir === undefined) target = made = mkdtempSync(join(tmpdir(), "screenshots."));
+        if (dir === undefined) target = topmostMade = mkdtempSync(join(tmpdir(), "screenshots."));
         else {
           target = resolve(dir);
-          made = mkdirSync(target, { recursive: true });
+          topmostMade = mkdirSync(target, { recursive: true });
         }
       }
       const path = join(target, name);
@@ -203,25 +163,21 @@ function files(dir: string | undefined): Files {
     },
     remove() {
       for (const path of written) rmSync(path, { force: true });
-      if (target === undefined || made === undefined) return;
-      // Each directory from the target up to the one the run made, each only once it is empty, so
-      // a file another hand put there keeps its directory.
+      if (target === undefined || topmostMade === undefined) return;
       for (let at = target; ; at = dirname(at)) {
         try {
           rmdirSync(at);
         } catch {
           return;
         }
-        if (at === made) return;
+        if (at === topmostMade) return;
       }
     },
   };
 }
 
-/** Prints the shot's caption, then its path. */
 const print = ({ path, caption }: Shot) => console.log(`${caption}\n  ${path}`);
 
-/** Whether an executable of the name is on PATH. */
 function onPath(name: string) {
   return (process.env.PATH ?? "").split(delimiter).some((dir) => {
     try {
@@ -233,13 +189,7 @@ function onPath(name: string) {
   });
 }
 
-/**
- * Why the terminal can't show the images, the first check that fails, or undefined when icat can.
- * Detection runs icat with the run's stdin and stdout, in its process group, so it reaches the
- * terminal and isn't stopped for touching /dev/tty; its stderr, where it names the transfer mode,
- * is dropped, and only its exit status counts.
- */
-function unshowable(icat: string[] | undefined) {
+function whyUnshowable(icat: string[] | undefined) {
   if (!process.stdout.isTTY) return "stdout is not a terminal";
   try {
     closeSync(openSync("/dev/tty", "r+"));
@@ -250,16 +200,12 @@ function unshowable(icat: string[] | undefined) {
   const [command, ...args] = icat;
   const { status } = spawnSync(
     command,
-    [...args, "--detect-support", `--detection-timeout=${DETECTION}`],
-    { stdio: ["inherit", "inherit", "ignore"], timeout: (DETECTION + 2) * 1000 },
+    [...args, "--detect-support", `--detection-timeout=${DETECTION_TIMEOUT_S}`],
+    { stdio: ["inherit", "inherit", "ignore"], timeout: (DETECTION_TIMEOUT_S + 2) * 1000 },
   );
   if (status !== 0) return "kitten icat detection failed";
 }
 
-/**
- * Runs the command with the run's stdio, in its process group, resolving to its exit status, or
- * to undefined when it doesn't start.
- */
 function exec(
   command: string,
   args: string[],
@@ -272,7 +218,6 @@ function exec(
   });
 }
 
-/** Each character HTML reserves, by its entity. */
 const ENTITIES: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -281,18 +226,13 @@ const ENTITIES: Record<string, string> = {
   "'": "&#39;",
 };
 
-/** Escapes the text for HTML. */
-const escape = (text: string) => text.replace(/[&<>"']/g, (char) => ENTITIES[char]);
+const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (char) => ENTITIES[char]);
 
-/**
- * The browser output's gallery: every shot in capture order under its caption, each image by its
- * file's name beside the page, and nothing else loaded: the styles are inline.
- */
 function gallery(shots: Shot[]) {
   const figures = shots.map(
     ({ path, caption }) =>
-      `<figure><figcaption>${escape(caption)}</figcaption>` +
-      `<img src="${escape(encodeURIComponent(basename(path)))}" alt="${escape(caption)}"></figure>`,
+      `<figure><figcaption>${escapeHtml(caption)}</figcaption>` +
+      `<img src="${escapeHtml(encodeURIComponent(basename(path)))}" alt="${escapeHtml(caption)}"></figure>`,
   );
   return `<!doctype html>
 <html lang="en">
@@ -314,36 +254,24 @@ ${figures.join("\n")}
 `;
 }
 
-/**
- * The outputs, by --output's name, each given the run's files, so one that cleans up takes away
- * only what the run wrote, and --keep. --keep is the terminal output's: the others keep their
- * files whatever it says.
- */
 const outputs: Record<string, (files: Files, flags: { keep: boolean }) => Output> = {
-  // Prints each caption and its path, and shows each image with kitty's icat when the terminal
-  // can, else says why on stderr and names --output browser; it never opens a browser itself.
-  // Its files are removed as the run ends, however it ends, unless --keep, which prints the
-  // directory kept: main closes it on SIGINT and SIGTERM too.
   terminal: (files, { keep }) => {
     const icat = onPath("kitten")
       ? ["kitten", "icat"]
       : onPath("kitty")
         ? ["kitty", "+kitten", "icat"]
         : undefined;
-    /** Whether the terminal can show the images, decided at the first shot, so a run that ends
-     * before any, as a usage error does, says nothing of it. */
     let showable: boolean | undefined;
     const decide = () => {
-      const reason = unshowable(icat);
+      const reason = whyUnshowable(icat);
       if (reason !== undefined) {
         console.error(
-          `${NAME}: no images shown: ${process.env.NVIM ? NVIM : reason}; ` +
+          `${NAME}: no images shown: ${process.env.NVIM ? NVIM_REASON : reason}; ` +
             "--output browser shows them in a browser",
         );
       }
       return reason === undefined;
     };
-    /** The directory the files are in, once one is written. */
     let dir: string | undefined;
     const remove = () => {
       if (!keep) files.remove();
@@ -355,7 +283,7 @@ const outputs: Record<string, (files: Files, flags: { keep: boolean }) => Output
         print(shot);
         if (icat && showable) {
           const [command, ...args] = icat;
-          await exec(command, [...args, ...ICAT, shot.path], "inherit");
+          await exec(command, [...args, ...ICAT_FLAGS, shot.path], "inherit");
         }
       },
       end() {
@@ -364,11 +292,7 @@ const outputs: Record<string, (files: Files, flags: { keep: boolean }) => Output
       close: remove,
     };
   },
-  // Writes the files and keeps them, printing each caption and its path.
   directory: () => ({ show: print, end: () => {} }),
-  // Writes the files and keeps them, printing each caption and its path, then the gallery beside
-  // them, index.html, which it opens with xdg-open as a file:// URL; when that fails it prints the
-  // gallery's path on stderr and the run exits 1.
   browser: (files) => {
     const shots: Shot[] = [];
     return {
@@ -388,7 +312,6 @@ const outputs: Record<string, (files: Files, flags: { keep: boolean }) => Output
   },
 };
 
-/** The usage line, naming the description's facet flags. */
 function usage(facets: Facet[]) {
   const flags = facets.map(({ flag }) => `[--${flag} <name>]`).join(" ");
   const profiles = flags ? `[--all | ${flags}]` : "[--all]";
@@ -398,16 +321,11 @@ function usage(facets: Facet[]) {
   );
 }
 
-/** The rows as a list under the heading, each row's first column padded to the widest. */
 function section(heading: string, rows: [string, string][]) {
   const width = Math.max(...rows.map(([term]) => term.length));
   return [heading, ...rows.map(([term, text]) => `  ${term.padEnd(width)}  ${text}`)].join("\n");
 }
 
-/**
- * The help --help prints: the usage, the flags' meanings, the schemes, the outputs, and the exit
- * codes, and, given the description, its pages and its facets.
- */
 function help(description?: Awaited<ReturnType<typeof load>>) {
   const facets = description?.facets ?? [];
   const parts = [
@@ -482,10 +400,6 @@ function help(description?: Awaited<ReturnType<typeof load>>) {
   return parts.join("\n\n");
 }
 
-/**
- * The description the module at the path exports by default, its server's root resolved against
- * the module's directory; throws naming what it lacks.
- */
 async function load(
   path: string,
 ): Promise<
@@ -498,7 +412,7 @@ async function load(
   }
   const facets = description.facets ?? [];
   for (const { flag } of facets) {
-    if (!/^[a-z][a-z-]*$/.test(flag) || RESERVED.includes(flag)) {
+    if (!/^[a-z][a-z-]*$/.test(flag) || RESERVED_FLAGS.includes(flag)) {
       throw new Error(`${path}: a facet can't take the flag --${flag}`);
     }
   }
@@ -514,15 +428,12 @@ async function load(
   };
 }
 
-/** Sends Tab, as a keyboard presses it, so the browser moves focus and marks it focus-visible. */
 async function pressTab(page: Page) {
   const event = { key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 };
   await page.cdp("Input.dispatchKeyEvent", { type: "keyDown", ...event });
   await page.cdp("Input.dispatchKeyEvent", { type: "keyUp", ...event });
 }
 
-/** Resolves once every custom element on the page is defined and has finished updating: its
- * updateComplete, which a Lit element has, resolved. */
 const RENDERED = `(async () => {
   const tags = [...new Set([...document.querySelectorAll("*")]
     .map((el) => el.localName).filter((name) => name.includes("-")))];
@@ -531,8 +442,6 @@ const RENDERED = `(async () => {
     .map((el) => el.updateComplete));
 })()`;
 
-/** Focuses the page's focus-start mark, which takes focus only by script, and returns how many
- * Tab presses reach the focus state from it, its data-focus-start or 1: none with no mark. */
 const FOCUS_START = `(() => {
   const mark = document.querySelector("[data-focus-start]");
   if (!mark) return 0;
@@ -540,8 +449,6 @@ const FOCUS_START = `(() => {
   return Number(mark.dataset.focusStart) || 1;
 })()`;
 
-/** The page's preferred cuts, as offsets from its top: each top-level section's top, then each
- * state's figure's top, so a tile seldom splits a state mid-way. */
 const BOUNDARIES = `(() => {
   const top = (el) => Math.floor(el.getBoundingClientRect().top + window.scrollY);
   return {
@@ -550,19 +457,13 @@ const BOUNDARIES = `(() => {
   };
 })()`;
 
-/**
- * The page's tiles, top to bottom, each `[top, height]`, meeting edge to edge. Each tile ends at
- * the lowest section boundary within its last SECTION_SLACK px, else the lowest state boundary
- * within its last STATE_SLACK px, else TILE px down; the last ends at the page's foot. The height
- * is the page's.
- */
 function tiles(
   height: number,
   { sections, states }: { sections: number[]; states: number[] },
 ): [number, number][] {
   const result: [number, number][] = [];
   for (let top = 0; top < height;) {
-    let end = Math.min(top + TILE, height);
+    let end = Math.min(top + TILE_MAX_HEIGHT, height);
     if (end < height) {
       const within = (slack: number) => (offset: number) => offset > end - slack && offset <= end;
       end =
@@ -576,7 +477,6 @@ function tiles(
   return result;
 }
 
-/** Sets each attribute on the page's root. */
 function setRoot(page: Page, attributes: Record<string, string>) {
   return page.evaluate(`(() => {
     const root = document.documentElement;
@@ -586,7 +486,6 @@ function setRoot(page: Page, attributes: Record<string, string>) {
   })()`);
 }
 
-/** Sets the page's viewport. */
 function setViewport(page: Page, { width, height }: Viewport) {
   return page.cdp("Emulation.setDeviceMetricsOverride", {
     width,
@@ -605,9 +504,7 @@ function setViewport(page: Page, { width, height }: Viewport) {
  */
 export async function main(argv: string[]): Promise<number> {
   const [path, ...args] = argv;
-  // Before parseArgs, which takes a value that starts with a dash only joined to its option, as
-  // --dir=-h, a token the scan passes over: the scan never mistakes a value for the help.
-  if (argv.some((arg) => HELP.includes(arg))) {
+  if (argv.some((arg) => HELP_FLAGS.includes(arg))) {
     const described = path === undefined || path.startsWith("-") ? undefined : await load(path);
     console.log(help(described));
     return 0;
@@ -630,8 +527,6 @@ export async function main(argv: string[]): Promise<number> {
   const facetFlags: Record<string, { type: "string" }> = Object.fromEntries(
     facets.map(({ flag }) => [flag, { type: "string" }]),
   );
-  // Object.assign's type is the intersection, so the bin's own flags keep their value types
-  // beside the facets' index.
   const options = Object.assign({}, facetFlags, flags);
   let values;
   try {
@@ -641,7 +536,6 @@ export async function main(argv: string[]): Promise<number> {
     return 2;
   }
   const { scheme: schemes, output } = values;
-  /** Each facet flag given, by flag, to the name it gives. */
   const named = new Map<string, string>();
   for (const { flag } of facets) {
     const name = values[flag];
@@ -658,8 +552,6 @@ export async function main(argv: string[]): Promise<number> {
     return 2;
   }
 
-  // The run's pages: those --page names, in the description's order, or every page. An unknown
-  // name lists the pages, before the server or the browser starts.
   const chosen = values.page;
   const names = description.pages.map(({ name }) => name);
   const unknownPage = chosen?.find((name) => !names.includes(name));
@@ -668,7 +560,6 @@ export async function main(argv: string[]): Promise<number> {
     return 2;
   }
 
-  /** The default profile: each facet's default, by flag. */
   const defaults: Record<string, string> = Object.fromEntries(
     facets.map((facet) => [facet.flag, facet.default]),
   );
@@ -676,8 +567,6 @@ export async function main(argv: string[]): Promise<number> {
     ? description.all.map((over) => ({ ...defaults, ...over }))
     : [{ ...defaults, ...Object.fromEntries(named) }];
 
-  // Each state numbered by its place among every page's states, so a file's name is the same
-  // whichever pages a run chooses.
   const captures: { page: DescribedPage; state: DescribedState; number: number }[] = [];
   let number = 0;
   for (const page of description.pages) {
@@ -691,23 +580,14 @@ export async function main(argv: string[]): Promise<number> {
   const written = files(values.dir);
   const shown = outputs[output](written, { keep: values.keep === true });
   const described = description.server;
-  /** The server's start, once the run begins it. */
   let starting: Promise<Server> | undefined;
-  /** The server's stop, once anything asks for it. */
   let stopping: Promise<void> | undefined;
-  /** Stops the server once, whatever asks first: the run's end, its failure, or a signal. */
   const stop = () =>
     (stopping ??= (async () => {
-      // A start that rejected started nothing to stop; its error is the run's.
       const server = await starting?.catch(() => undefined);
       await server?.stop();
     })());
   let interrupted = false;
-  /**
-   * Ends the run on SIGINT or SIGTERM, exiting 128 plus the signal's number once the server has
-   * stopped and the output has closed; a second signal exits at once. The browser ends with the
-   * process, by its exit listener.
-   */
   const interrupt = async (signal: NodeJS.Signals) => {
     const code = 128 + os.signals[signal];
     if (interrupted) process.exit(code);
@@ -723,8 +603,6 @@ export async function main(argv: string[]): Promise<number> {
   process.on("SIGTERM", interrupt);
   let browser: Browser | undefined;
   try {
-    // A start function is called here, once the arguments and the pages are checked, so the help
-    // and every usage error start nothing; one that throws or rejects fails the run, naming why.
     starting = typeof described === "function" ? (async () => described())() : serve(described);
     let origin: string;
     try {
@@ -736,12 +614,9 @@ export async function main(argv: string[]): Promise<number> {
       });
     }
     browser = await launch();
-    // The origin as a directory, so a path resolves under any base path a start's origin has.
     const base = origin.endsWith("/") ? origin : `${origin}/`;
     const url = (page: DescribedPage) => new URL(page.path, base).href;
 
-    // Each named profile checked against every run page's registry, read once the page loads,
-    // so the profiles its modules register count, and before any capture.
     if (named.size > 0 && description.profiles) {
       for (const page of pages) {
         const tab = await browser.open(url(page));
@@ -767,7 +642,7 @@ export async function main(argv: string[]): Promise<number> {
     for (const { page, state, number } of captures) {
       const name = `${number}-${state.name ?? page.name}`;
       const caption = state.caption ?? page.caption;
-      const viewport = state.viewport ?? VIEWPORT;
+      const viewport = state.viewport ?? DEFAULT_VIEWPORT;
       for (const profile of profiles) {
         const label = facets.map(({ flag }) => profile[flag]);
         for (const scheme of schemes ?? SCHEMES) {
@@ -784,21 +659,16 @@ export async function main(argv: string[]): Promise<number> {
             });
             await tab.evaluate(RENDERED);
             await state.open?.(tab);
-            // A headless page never has the window's focus, which :focus-visible otherwise needs.
             await tab.cdp("Emulation.setFocusEmulationEnabled", { enabled: true });
             const presses = await tab.evaluate(FOCUS_START);
             for (let press = 0; press < presses; press++) await pressTab(tab);
             await tab.evaluate(SETTLED);
 
-            /** The full page's tiles. */
             let cuts: [number, number][] | undefined;
             if (state.full) {
               const { cssContentSize } = await tab.cdp("Page.getLayoutMetrics");
               const height = Math.ceil(cssContentSize.height);
               cuts = tiles(height, await tab.evaluate(BOUNDARIES));
-              // The viewport as tall as the page, so every tile lies inside it: Chromium paints
-              // a scrolling region's scrollbars only inside the viewport, and a capture beyond it
-              // would drop them below the first screen. The width stays, so the layout doesn't.
               await setViewport(tab, { ...viewport, height: Math.max(viewport.height, height) });
               await tab.evaluate(SETTLED);
             }

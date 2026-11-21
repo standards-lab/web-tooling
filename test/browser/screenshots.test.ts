@@ -1,12 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/screenshots.test.ts, with the
-// package and the bin by their new names, and node linked into a stub's PATH, not its directory.
-// The screenshot bin at its seam, a command line: the package's bin, spawned as a child process as
-// a consumer's task runs it, over the fixture description and its pages, which the package's own
-// server serves. Each case reads the exit code, stdout and stderr, the files written, and each
-// PNG's header for its size, and the reports the fixture pages post as the bin drives them. The
-// commands the outputs run, kitten, kitty, and xdg-open, are the fixture stub, linked into a PATH
-// of the case's own; the cases where stdout is a terminal run the bin under a pty, by util-linux's
-// script, so the terminal output's checks, and icat's calls, are the real ones.
+// Adapted from spike-html-apps-tooling (d77877b): test/browser/screenshots.test.ts, the package and bin by their new names, node linked into a stub's PATH.
 
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -36,14 +28,12 @@ after(() => {
   for (const scratch of scratches) rmSync(scratch, { recursive: true, force: true });
 });
 
-/** A new temporary directory, removed after the run. */
 function scratchDir(): string {
   const scratch = mkdtempSync(join(tmpdir(), "screenshots-test."));
   scratches.push(scratch);
   return scratch;
 }
 
-/** A report a fixture page posts: what it shows, as description.ts's reporter reads it. */
 interface Report {
   kind: string;
   page: string;
@@ -54,7 +44,6 @@ interface Report {
   updated: boolean;
 }
 
-/** A run of the bin: its exit, its output, and the reports its pages posted. */
 interface Run {
   code: number | null;
   signal: NodeJS.Signals | null;
@@ -63,12 +52,6 @@ interface Run {
   reports: Report[];
 }
 
-/**
- * Runs the bin over the fixture description and the arguments, resolving to its exit code, its
- * output, and the reports its pages posted. Its stdout is a pipe, not a terminal, and it runs
- * outside any Neovim terminal the tests run in. With interrupt, the bin is sent SIGINT as soon as
- * it prints.
- */
 function run(
   args: string[],
   {
@@ -108,7 +91,6 @@ function run(
   });
 }
 
-/** The PNG's size from its header, asserting the PNG signature and that IHDR comes first. */
 function png(path: string): { width: number; height: number } {
   const bytes = readFileSync(path);
   assert.deepEqual([...bytes.subarray(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
@@ -116,14 +98,9 @@ function png(path: string): { width: number; height: number } {
   return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
 }
 
-/**
- * The stdout the directory output prints for the files, each `caption\n  path`, given each file's
- * name and caption.
- */
 const printed = (dir: string, shots: [string, string][]): string =>
   shots.map(([name, caption]) => `${caption}\n  ${join(dir, name)}\n`).join("");
 
-/** The directory output's flag, which the cases that read the files a run keeps take. */
 const DIRECTORY = ["--output", "directory"];
 
 const DEFAULT = "dawn-wide-plain";
@@ -133,12 +110,10 @@ describe("every page, by default, to a directory", () => {
   let dir: string;
   let result: Run;
   before(async () => {
-    // Two levels the bin makes.
     dir = join(scratchDir(), "made", "here");
     result = await run([...DIRECTORY, "--dir", dir]);
   });
 
-  /** Each capture's file and caption, in the order captured. */
   const shots = ["light", "dark"]
     .flatMap((scheme) =>
       [1, 2, 3, 4].map((k): [string, string] => [
@@ -171,11 +146,8 @@ describe("every page, by default, to a directory", () => {
         assert.equal(size.width, 1280);
         return size.height;
       });
-      // 1000: the section at 1000, within the last quarter, over the lower state at 1100; 800:
-      // the state at 1800, within the last half; 1200: no boundary within reach; 400: the rest.
       assert.deepEqual(heights, [1000, 800, 1200, 400]);
     }
-    // A page shorter than the viewport is one tile, the viewport's height.
     assert.deepEqual(png(join(dir, `2-focus--${DEFAULT}-light.png`)), { width: 1280, height: 800 });
   });
 
@@ -190,7 +162,6 @@ describe("every page, by default, to a directory", () => {
 
   test("focus is reached by real Tab presses from the focus-start mark", () => {
     const focus = result.reports.filter(({ kind }) => kind === "focus");
-    // One capture per scheme: the mark, then two presses to b2, each focus-visible.
     assert.deepEqual(
       focus.map(({ page, id, focusVisible }) => [page, id, id === "start" || focusVisible]),
       ["light", "dark"].flatMap(() => [
@@ -199,7 +170,6 @@ describe("every page, by default, to a directory", () => {
         ["/focus.html", "b2", true],
       ]),
     );
-    // Only after every custom element has finished updating.
     assert.ok(focus.every(({ updated }) => updated));
   });
 
@@ -373,7 +343,6 @@ describe("the flags", () => {
 });
 
 describe("exit 2", () => {
-  // No browser: each of these exits before the browser launches, which would fail without one.
   const unlaunched = { env: { BROWSER_EXECUTABLE: undefined } };
   const usage =
     "usage: web-screenshots <description> [--all | [--palette <name>] [--space <name>] [--type <name>]] [--page <name>]... [--scheme light|dark] [--output terminal|directory|browser] [--dir <path>] [--keep] [-h | --help]\n";
@@ -419,7 +388,6 @@ describe("exit 2", () => {
 
   test("an unregistered profile names the facet's registered names, after load, before any capture", async () => {
     const dir = join(scratchDir(), "out");
-    // focus.html registers extra once it renders; narrow.html, read after it, never does.
     const args = ["--palette", "extra", "--page", "focus", "--page", "narrow", "--dir", dir];
     const result = await run(args);
     assert.equal(result.code, 2);
@@ -429,7 +397,6 @@ describe("exit 2", () => {
     );
     assert.equal(result.stdout, "");
     assert.equal(existsSync(dir), false);
-    // It is checked in the browser: with none, the launch fails first.
     const unlaunchedResult = await run(args, unlaunched);
     assert.equal(unlaunchedResult.code, 1);
     assert.match(unlaunchedResult.stderr, /BROWSER_EXECUTABLE names no browser/);
@@ -437,12 +404,9 @@ describe("exit 2", () => {
 });
 
 describe("--help", () => {
-  // No browser and an empty TMPDIR: the help prints before the browser launches, which would fail
-  // without one, and before any file is written.
   const unlaunched = (temp: string) => ({ env: { BROWSER_EXECUTABLE: undefined, TMPDIR: temp } });
   const usage =
     "usage: web-screenshots <description> [--all | [--palette <name>] [--space <name>] [--type <name>]] [--page <name>]... [--scheme light|dark] [--output terminal|directory|browser] [--dir <path>] [--keep] [-h | --help]\n";
-  /** The help's sections, by heading, each its lines below the heading. */
   const sections = (stdout: string): Record<string, string[]> =>
     Object.fromEntries(
       stdout
@@ -452,7 +416,6 @@ describe("--help", () => {
         .filter(([heading]) => heading.endsWith(":"))
         .map(([heading, ...lines]) => [heading, lines]),
     );
-  /** The flag rows, the same with or without a description. */
   const FLAGS = [
     "--<facet>",
     "--all",
@@ -463,7 +426,6 @@ describe("--help", () => {
     "--keep",
     "-h, --help",
   ];
-  /** The sections after the description's, the same with or without one. */
   const assertCommon = (found: Record<string, string[]>): void => {
     assert.deepEqual(
       found["flags:"].map((line) => FLAGS.find((flag) => line.startsWith(`  ${flag}`))),
@@ -496,8 +458,6 @@ describe("--help", () => {
       "  focus   the focus page",
       "  narrow  the narrow page",
     ]);
-    // Each facet's default, then the names the fixture's all gives its flag: dawn twice, dusk;
-    // tight; fancy.
     assert.deepEqual(found["facets:"], [
       "  --palette <name>  sets data-palette; default dawn; names: dawn, dusk",
       "  --space <name>    sets data-space; default wide; names: wide, tight",
@@ -550,7 +510,6 @@ describe("--help", () => {
 
   test("a facet can't take the flag --help, with --help or without", async () => {
     const scratch = scratchDir();
-    /** A description module whose one facet takes the flag, its path. */
     const module = (flag: string): string => {
       const path = join(scratch, `${flag}.js`);
       writeFileSync(
@@ -567,7 +526,6 @@ describe("--help", () => {
       assert.match(result.stderr, /help\.js: a facet can't take the flag --help/);
       assert.equal(result.stdout, "");
     }
-    // The same module with another flag is taken.
     const taken = await run([module("helper"), "--help"], {
       ...unlaunched(scratchDir()),
       describe: false,
@@ -595,7 +553,6 @@ describe("--help", () => {
   });
 });
 
-/** A stub's call, as stub.js logs it. */
 interface Call {
   name: string;
   args: string[];
@@ -603,11 +560,6 @@ interface Call {
   tty: boolean;
 }
 
-/**
- * A PATH holding the fixture stub under each name, and node, so the bin runs, and nothing else: no
- * real kitten, kitty, or xdg-open, wherever node is installed. The env gives it, and the stubs' log, which
- * calls() reads. `statuses` are the stubs' exit statuses, as STUB_EXIT takes them.
- */
 function stubbed(
   names: string[],
   statuses: Record<string, number> = {},
@@ -622,7 +574,6 @@ function stubbed(
       STUB_LOG: log,
       STUB_EXIT: JSON.stringify(statuses),
     },
-    /** Each stub's call, in order. */
     calls: () =>
       existsSync(log)
         ? readFileSync(log, "utf8")
@@ -633,7 +584,6 @@ function stubbed(
   };
 }
 
-/** The command's path on the test's own PATH, before a case's PATH replaces it. */
 function which(name: string): string {
   for (const dir of (process.env.PATH ?? "").split(delimiter)) {
     if (existsSync(join(dir, name))) return join(dir, name);
@@ -641,14 +591,8 @@ function which(name: string): string {
   throw new Error(`${name} is not on PATH`);
 }
 
-/** Quotes the word for the shell. */
 const quote = (word: string): string => `'${word.replaceAll("'", `'\\''`)}'`;
 
-/**
- * Runs the bin over the fixture description and the arguments under a pty, by script, so its
- * stdout is a terminal and /dev/tty opens; with setsid, in a new session, where /dev/tty doesn't.
- * Its stderr goes to a file of its own, so it reads apart from stdout.
- */
 function runInPty(
   args: string[],
   { env, setsid = false }: { env: Record<string, string>; setsid?: boolean },
@@ -681,7 +625,6 @@ function runInPty(
   });
 }
 
-/** The focus and narrow pages' files and captions, each scheme, in the order captured. */
 const TWO_PAGES: [string, string][] = [
   [`2-focus--${DEFAULT}-light.png`, `the focus page: ${DEFAULT_CAPTION}, light`],
   [`2-focus--${DEFAULT}-dark.png`, `the focus page: ${DEFAULT_CAPTION}, dark`],
@@ -690,11 +633,9 @@ const TWO_PAGES: [string, string][] = [
 ];
 const TWO_PAGE_ARGS = ["--page", "focus", "--page", "narrow"];
 
-/** The terminal output's stderr line when it shows no images, for the reason. */
 const fallback = (reason: string): string =>
   `web-screenshots: no images shown: ${reason}; --output browser shows them in a browser\n`;
 
-/** The icat call for each image, as the stub records it, after its command's own words. */
 const ICAT = ["--transfer-mode=stream", "--align=left", "--fit=both"];
 
 describe("--output terminal", () => {
@@ -851,7 +792,6 @@ describe("--output terminal", () => {
 });
 
 describe("--output browser", () => {
-  /** Each URL the gallery's attributes load, in the order they come. */
   const loads = (html: string): string[] =>
     [...html.matchAll(/\b(src|href|srcset|poster|data)=["']?([^"' >]*)/g)].map(([, , url]) => url);
 

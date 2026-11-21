@@ -1,10 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/start.test.ts, with the bin by
-// its new name.
-// The screenshot bin over a description whose server is a start function, at the bin's seam, a
-// command line: the start called once the arguments are checked, the pages opened against the
-// origin it resolves to, and its stop called exactly once as the run ends, whether it captures
-// everything, fails mid-run, or is ended by SIGINT or SIGTERM; a start that rejects fails the run;
-// the help and the usage errors start nothing. The fixture logs each start, stop, and request.
+// Adapted from spike-html-apps-tooling (d77877b): test/browser/start.test.ts, with the bin by its new name.
 
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -23,14 +17,12 @@ after(() => {
   for (const scratch of scratches) rmSync(scratch, { recursive: true, force: true });
 });
 
-/** A new temporary directory, removed after the run. */
 function scratchDir(): string {
   const scratch = mkdtempSync(join(tmpdir(), "start-test."));
   scratches.push(scratch);
   return scratch;
 }
 
-/** A run of the bin: its exit, its output, the fixture's log lines, and the files it kept. */
 interface Run {
   code: number | null;
   signal: NodeJS.Signals | null;
@@ -40,11 +32,6 @@ interface Run {
   files: string[];
 }
 
-/**
- * Runs the bin over the fixture description, its files kept in a directory of the run's own, with
- * the arguments, START_MODE, and BROWSER_EXECUTABLE unset when unlaunched. With signal, the bin is
- * sent it once the fixture logs "open".
- */
 function run(
   args: string[],
   {
@@ -91,7 +78,6 @@ function run(
   });
 }
 
-/** The fixture's start and stop lines, in order. */
 const lifecycle = (log: string[]) => log.filter((line) => line === "start" || line === "stop");
 
 describe("a start function", () => {
@@ -107,7 +93,6 @@ describe("a start function", () => {
     assert.equal(result.log[0], "start");
     assert.equal(result.log.at(-1), "stop");
     assert.deepEqual(lifecycle(result.log), ["start", "stop"]);
-    // Each capture's page, under the origin's base path, in light then dark.
     const pages = result.log.filter((line) => line.startsWith("GET /app/"));
     assert.deepEqual(pages, [
       "GET /app/one.html",

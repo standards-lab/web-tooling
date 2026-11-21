@@ -1,12 +1,4 @@
-// Adapted from spike-html-go-wasm (f026de3): test/browser/site-nav-layout-suite.ts, its drawnIn
-// and its check that the page draws in the set the test file chose.
-// The font set at the package's seam, imported by the package's own name as a consumer imports it:
-// the faces a browser launched in the test file's set draws a page in. fonts.test.ts runs it in the
-// machine's fonts and fonts-dejavu.test.ts in the pinned DejaVu set, which that file chooses
-// before this suite's browser launches. In DejaVu, every face drawn is one of the six of
-// fonts-dejavu-core, whatever the family, weight, or style asked for; every generic family draws
-// in DejaVu; and local() finds the six faces alone, not the archive's others. In the machine's
-// fonts, a family the machine's fontconfig lists outside DejaVu draws in that family.
+// Adapted from spike-html-go-wasm (f026de3): test/browser/site-nav-layout-suite.ts, its drawnIn and its check of the chosen set.
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -16,13 +8,11 @@ import { launch } from "@standards-lab/web-tooling/browser.js";
 import type { Browser, Page } from "@standards-lab/web-tooling/browser.js";
 import { fonts } from "@standards-lab/web-tooling/fonts.js";
 
-/** A face the platform draws text in, as CSS.getPlatformFontsForNode reports it. */
 interface Drawn {
   familyName: string;
   postScriptName: string;
 }
 
-/** The six faces of fonts-dejavu-core, by their PostScript names. */
 const CORE = [
   "DejaVuSans",
   "DejaVuSans-Bold",
@@ -32,10 +22,8 @@ const CORE = [
   "DejaVuSerif-Bold",
 ];
 
-/** The six faces' families. */
 const FAMILIES = ["DejaVu Sans", "DejaVu Sans Mono", "DejaVu Serif"];
 
-/** The generic families useDejaVu() names, each with the family it resolves to. */
 const GENERICS = {
   "system-ui": "DejaVu Sans",
   "sans-serif": "DejaVu Sans",
@@ -43,14 +31,10 @@ const GENERICS = {
   serif: "DejaVu Serif",
 };
 
-/** The generic families it doesn't name, which resolve to one of the six's families all the
- * same. */
 const OTHER_GENERICS = ["cursive", "fantasy", "math", "emoji", "ui-sans-serif", "ui-monospace"];
 
-/** Families outside the six, a machine's or no font's at all. */
 const ELSEWHERE = ["Arial", "Liberation Sans", "Noto Sans", "Times New Roman", "no such font"];
 
-/** The six faces' full names, which local() finds in DejaVu. */
 const CORE_NAMES = [
   "DejaVu Sans",
   "DejaVu Sans Bold",
@@ -60,8 +44,6 @@ const CORE_NAMES = [
   "DejaVu Serif Bold",
 ];
 
-/** Faces of the archive's ttf/ outside the six, by their full names, which local() never finds in
- * DejaVu. */
 const ARCHIVE_NAMES = [
   "DejaVu Sans Oblique",
   "DejaVu Sans Bold Oblique",
@@ -73,10 +55,7 @@ const ARCHIVE_NAMES = [
   "DejaVu Math TeX Gyre",
 ];
 
-/** The lines a fontconfig tool answers the query with, from the machine's fontconfig, not the
- * DejaVu set's, or none when the tool is missing. */
 function fontconfig(tool: string, args: string[]): string[] | undefined {
-  // useDejaVu() names its fontconfig in FONTCONFIG_FILE; the machine's is the default one.
   const env = { ...process.env };
   if (fonts().families) delete env.FONTCONFIG_FILE;
   try {
@@ -86,10 +65,6 @@ function fontconfig(tool: string, args: string[]): string[] | undefined {
   }
 }
 
-/** A family the machine's fontconfig lists, as its names, outside DejaVu, with outlines and
- * English's glyphs, which the machine's fontconfig matches to itself rather than aliasing it to
- * another; none when fc-list is missing or lists no such family. The first in sort order, so a
- * machine names the same one each run. */
 function machineFamily(): string[] | undefined {
   const listed = fontconfig("fc-list", [
     ":lang=en:outline=true:style=Regular",
@@ -106,11 +81,9 @@ function machineFamily(): string[] | undefined {
     );
 }
 
-/** The family list as a font-family value, each name quoted, but for a generic family. */
 const family = (name: string) =>
   name in GENERICS || OTHER_GENERICS.includes(name) ? name : `"${name}"`;
 
-/** A page of one paragraph per family, in the weight and style. */
 const page = (families: string[], weight: number, style: string): string =>
   `data:text/html,${encodeURIComponent(
     families
@@ -121,7 +94,6 @@ const page = (families: string[], weight: number, style: string): string =>
       .join(""),
   )}`;
 
-/** The faces the platform draws the paragraph's own text in. */
 async function drawnIn(tab: Page, index: number): Promise<Drawn[]> {
   await tab.cdp("DOM.enable");
   await tab.cdp("CSS.enable");
@@ -137,7 +109,6 @@ async function drawnIn(tab: Page, index: number): Promise<Drawn[]> {
   return drawn;
 }
 
-/** The faces each family draws in, in the weight and style, by family. */
 async function drawn(families: string[], weight = 400, style = "normal"): Promise<Drawn[][]> {
   const tab = await browser.open(page(families, weight, style));
   try {
@@ -149,7 +120,6 @@ async function drawn(families: string[], weight = 400, style = "normal"): Promis
   }
 }
 
-/** Whether local() finds a face of the full name, by a FontFace's load. */
 async function found(names: string[]): Promise<boolean[]> {
   const tab = await browser.open("about:blank");
   try {

@@ -1,8 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/browser.test.ts, importing the
-// package by its new name.
-// The driver at the package's seam, imported by the package's own name as a consumer imports it:
-// launch and its settings, its profile's removal on close and on exit, its loopback-only names, a
-// page's API, its scrollbars, the page wait, and the settle expression, against data: pages.
+// Adapted from spike-html-apps-tooling (d77877b): test/browser/browser.test.ts, the package by its new name.
 
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -16,10 +12,8 @@ import { after, before, describe, test } from "node:test";
 import { SETTLED, launch, until } from "@standards-lab/web-tooling/browser.js";
 import type { Browser, Page } from "@standards-lab/web-tooling/browser.js";
 
-/** The HTML as a data: URL a page loads. */
 const page = (html: string): string => `data:text/html,${encodeURIComponent(html)}`;
 
-/** Runs `body` with the environment variable set to `value`, or unset when it is undefined. */
 async function withEnv(
   name: string,
   value: string | undefined,
@@ -46,7 +40,6 @@ describe("launch", () => {
   test("the browser's profile is a temporary directory, removed on close", async () => {
     const scratch = mkdtempSync(join(tmpdir(), "browser-test."));
     try {
-      // os.tmpdir() reads TMPDIR at each call, so the profile lands in the scratch directory.
       await withEnv("TMPDIR", scratch, async () => {
         const browser = await launch();
         const profiles = readdirSync(scratch);
@@ -63,8 +56,6 @@ describe("launch", () => {
   test("a process that exits without close ends the browser and removes its profile", async () => {
     const scratch = mkdtempSync(join(tmpdir(), "browser-test."));
     try {
-      // The child launches, prints the browser's pid, its one child process (Linux's /proc lists
-      // it), and exits with the browser open.
       const script = `
         import { readFileSync } from "node:fs";
         import { launch } from "@standards-lab/web-tooling/browser.js";
@@ -86,7 +77,6 @@ describe("launch", () => {
       const pid = Number(stdout.trim());
       assert.ok(Number.isInteger(pid) && pid > 0, `no browser pid in ${JSON.stringify(stdout)}`);
 
-      /** Whether the process is gone: signal 0 tests for it without sending one. */
       const gone = () => {
         try {
           process.kill(pid, 0);
@@ -112,20 +102,15 @@ describe("launch", () => {
     );
     server.listen(0, "127.0.0.1");
     await once(server, "listening");
-    // A server listening on a TCP port has an address, never a pipe's name.
     const { port } = server.address() as AddressInfo;
     const browser = await launch();
     try {
       const tab = await browser.open(`http://localhost:${port}/`);
       try {
         assert.equal(await tab.evaluate("document.title"), "loopback");
-        // A name the resolver rules map to nothing fails at once, before any lookup leaves the
-        // machine; without the rules this is a DNS lookup, and on a networked machine a load.
         const started = performance.now();
         await assert.rejects(tab.goto("http://example.com/"), /ERR_NAME_NOT_RESOLVED/);
         assert.ok(performance.now() - started < 1000, "the failure took a lookup's time");
-        // Chrome resolves a localhost subdomain to the loopback address itself, with no lookup,
-        // so this page loads without the rules on any machine, networked or not.
         await assert.rejects(tab.goto(`http://page.localhost:${port}/`), /ERR_NAME_NOT_RESOLVED/);
       } finally {
         await tab.close();
@@ -182,7 +167,6 @@ describe("a page", () => {
     await tab.evaluate("console.log('heard')");
     assert.equal(await logged, "heard");
 
-    // Target.closeTarget answers before the page is gone, so another page watches it leave.
     const other = await browser.open(page("<title>other</title>"));
     try {
       const titles = async (): Promise<string[]> => {
@@ -211,7 +195,6 @@ describe("a page", () => {
     const tab = await browser.open(region);
     try {
       assert.ok((await tab.evaluate(gutter)) > 0, "the scrollbar takes no width");
-      // The measure can fail: with headless's default, hidden scrollbars, the gutter is gone.
       await tab.cdp("Emulation.setScrollbarsHidden", { hidden: true });
       await tab.goto(region);
       assert.equal(await tab.evaluate(gutter), 0);
@@ -255,8 +238,6 @@ describe("SETTLED", () => {
   test("resolves once the fonts are ready and two frames have painted", async () => {
     const browser = await launch();
     try {
-      // The page's fonts are ready only 200 ms after SETTLED asks, so a wait that skipped them, or
-      // counted its frames before them, would show.
       const tab = await browser.open(
         page(`<script>
           window.painted = 0;

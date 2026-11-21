@@ -1,13 +1,13 @@
 // From spike-html-apps-tooling (d77877b): src/browser.ts.
+// Adapted from spike-html-apps-components (2fded6d): test/browser/support/browser-pipe.js, in TypeScript.
+// Adapted from spike-html-apps (a6ff18d): test/browser/support/app.js, its until, rejecting on a throw.
+// From spike-html-apps-components (2fded6d): scripts/screenshots.js, its SETTLED.
 // The browser driver: the browser BROWSER_EXECUTABLE names, over the DevTools Protocol on a pipe,
 // with no package between, its pages, and the waits a test makes on a page.
-// Adapted from spike-html-apps-components (2fded6d): test/browser/support/browser-pipe.js, in
-// TypeScript, with until from spike-html-apps (a6ff18d): test/browser/support/app.js, rejecting on
-// a thrown expression, and SETTLED from spike-html-apps-components (2fded6d): scripts/screenshots.js.
+// See docs/internals.md
 
-// The protocol's results and a page's values are JSON whose shape only the caller knows, so they
-// are any, as JSON.parse's are, for the caller to destructure or annotate.
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- The protocol's results and a page's values
+   are JSON whose shape only the caller knows, any as JSON.parse's are, for the caller to type. */
 
 import { spawn } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -39,11 +39,9 @@ export interface Page {
   close(): Promise<void>;
 }
 
-/** What every browser runs with, so a reading is the same on any machine. */
 const settings = { lang: "en-US", tz: "UTC", width: 1280, height: 720 };
 
-/** How long a browser's ending waits for its processes to be gone before removing its profile. */
-const ENDING = 2000;
+const GROUP_ENDING_MS = 2000;
 
 /**
  * Launches the browser BROWSER_EXECUTABLE names, resolving once the protocol answers; rejects
@@ -61,8 +59,6 @@ export async function launch(): Promise<Browser> {
     executable,
     [
       "--headless",
-      // Ubuntu's AppArmor refuses the user namespaces a downloaded Chrome's sandbox needs; the
-      // browser loads only the repository's pages, from the loopback address.
       "--no-sandbox",
       "--remote-debugging-pipe",
       `--user-data-dir=${profile}`,
@@ -70,22 +66,15 @@ export async function launch(): Promise<Browser> {
       "--no-first-run",
       "--disable-background-networking",
       "--disable-component-update",
-      // Every name but the loopback address and localhost fails, so no background request leaves
-      // the machine.
       "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost",
       "about:blank",
     ],
     {
-      // Its own process group, which its renderers and services join, so its ending ends them
-      // all: one that outlives the browser writes the profile again after the removal. A parent
-      // killed by a signal still ends the group, whose browser exits as its pipe closes.
       detached: true,
       stdio: ["ignore", "ignore", "pipe", "pipe", "pipe"],
       env: { ...process.env, TZ: settings.tz, TMPDIR: profile },
     },
   );
-  // Chromium reads commands on its fd 3 and writes replies and events on its fd 4, each message one
-  // JSON object ended by a NUL.
   const errors = child.stdio[2] as Readable;
   const commands = child.stdio[3] as Writable;
   const replies = child.stdio[4] as Readable;
@@ -129,7 +118,6 @@ export async function launch(): Promise<Browser> {
     }
   });
 
-  /** Sends one command, resolving to its result. */
   const send = (method: string, params: Record<string, unknown> = {}, sessionId?: string) =>
     new Promise<any>((resolve, reject) => {
       const id = ++next;
@@ -138,34 +126,25 @@ export async function launch(): Promise<Browser> {
       commands.write(`${JSON.stringify({ id, method, params, sessionId })}\0`);
     });
 
-  /** Calls the listener with each event of the method in the session, replacing any before it. */
   const on = (sessionId: string, method: string, listener: (params: any) => void) => {
     listeners.set(`${sessionId}:${method}`, listener);
   };
 
-  // The group is the browser's pid; a spawn that failed has none, and nothing to end.
   const group = child.pid;
 
-  // A run that ends without closing the browser still ends it and every process it started, and
-  // removes its profile once they are gone, synchronously, as an exit listener must: a process
-  // SIGKILL has not yet ended writes the profile again after the removal. SIGKILL, since a browser
-  // shutting down on SIGTERM writes its profile again too.
   const orphan = () => {
     if (group !== undefined) {
       kill(group);
       const pause = new Int32Array(new SharedArrayBuffer(4));
-      const deadline = performance.now() + ENDING;
+      const deadline = performance.now() + GROUP_ENDING_MS;
       while (alive(group) && performance.now() < deadline) Atomics.wait(pause, 0, 0, 10);
     }
     try {
       rmSync(profile, { recursive: true, force: true });
-    } catch {
-      // The process is exiting: a profile it cannot remove is left, not thrown.
-    }
+    } catch {}
   };
   process.once("exit", orphan);
 
-  /** Ends the browser, by Browser.close or after 5 s by a signal, and removes its profile. */
   const close = async () => {
     process.off("exit", orphan);
     if (!gone) {
@@ -174,10 +153,9 @@ export async function launch(): Promise<Browser> {
       await exited;
       clearTimeout(timer);
     }
-    // The browser's processes outlive it briefly, and write its profile while they do.
     if (group !== undefined) {
       kill(group);
-      await ended(group, ENDING);
+      await ended(group, GROUP_ENDING_MS);
     }
     rmSync(profile, { recursive: true, force: true });
   };
@@ -189,14 +167,11 @@ export async function launch(): Promise<Browser> {
     throw error;
   }
 
-  /** Opens the URL in a new page, resolving to the page once its load event fires. */
   async function open(url: string): Promise<Page> {
     const { targetId } = await send("Target.createTarget", { url: "about:blank" });
-    // flatten: the page's commands carry its session id on the one pipe.
     const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
     const cdp: Page["cdp"] = (method, params) => send(method, params, sessionId);
     await cdp("Page.enable");
-    // A page Target.createTarget opens headless has no size until one is emulated.
     const { width, height } = settings;
     await cdp("Emulation.setDeviceMetricsOverride", {
       width,
@@ -207,8 +182,6 @@ export async function launch(): Promise<Browser> {
     await cdp("Emulation.setEmulatedMedia", {
       features: [{ name: "prefers-color-scheme", value: "light" }],
     });
-    // Headless hides scrollbars; a page shows them as a user's browser does, so a scrolling
-    // region's measures and captures match what a user sees.
     await cdp("Emulation.setScrollbarsHidden", { hidden: false });
 
     const goto: Page["goto"] = async (url) => {

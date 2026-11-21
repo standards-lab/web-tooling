@@ -15,6 +15,10 @@ The architecture pages that apply, in the architecture repository:
 - `architecture/principles/rolling-currency.md`: every tool, package, and action pin explicit and
   at its latest.
 - `architecture/principles/independent-releases.md`: the package releases on its own tags.
+- `architecture/principles/comments.md`: every comment is one of the five kinds (package
+  documentation, a suppression's reason, a pin hold's reason, provenance, a reference) in
+  TypeScript, JavaScript, shell, CSS, HTML, tests, and every configuration file (TOML, YAML,
+  JSONC, `.gitignore`, `.prettierignore`).
 - `architecture/principles/validation-first.md`: the bin checks its arguments against the
   description before it starts a server or a browser, and a facet's names before any capture.
 
@@ -30,12 +34,19 @@ The architecture pages that apply, in the architecture repository:
 
 ## Code
 
-- Code meets the bar of spike-html-conventions' `layers/` code at a88828a: a 2–4 line header, a
-  one-line doc comment per export, and comments only for a non-obvious why.
-- A copied file names its source repository and commit in a provenance line, which reads
-  `From|Adapted from <repo> (<commit>): <path>`. It names the immediate source alone; that source
-  keeps the earlier lines. A JSON file, which takes no comment, has its line in
-  `context/README.md`.
+- Code meets the bar of spike-html-conventions' `layers/` code at a88828a: a 2–4 line header and a
+  one-line doc comment per export.
+- A module's or a script's header documents the public contract, what it provides and promises,
+  with no reasoning, and each export carries a one-line doc comment. A doc comment on a
+  non-exported symbol, an in-body comment, and a test's comment are none of the five kinds: their
+  reasoning goes into names, exported docs, or a `docs/` page behind a one-line `See` reference,
+  and a script's sections become named functions. A configuration file's header is at most a short
+  description plus `See` lines. A lint directive carries its reason as its `--` description.
+- A copied file names each source repository and commit in one provenance line per source, which
+  reads `From|Adapted from <repo> (<commit>): <path>`, plus at most a short clause naming what
+  changed, never why, and a third-party source's licence after a semicolon. The lines its immediate
+  source carried for earlier sources stay beside that source's own. A JSON file, which takes no
+  comment, has its line in `context/README.md`.
 - Sources use `.ts` relative specifiers, which tsc rewrites.
 - Tests are TypeScript run under Node's type stripping, erasable syntax only, type-checked by
   `tsconfig.test.json`; browser-served fixtures, and the stub a test runs from a PATH, stay `.js`.

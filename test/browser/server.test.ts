@@ -1,8 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/server.test.ts, importing the
-// package by its new name.
-// The server and the driver together, each imported by the package's own name: a page the server
-// sends, loaded through launch, whose stylesheet applies and whose module script runs, importing a
-// /deps/ package and its pnpm store siblings, which a browser does only for the right MIME types.
+// Adapted from spike-html-apps-tooling (d77877b): test/browser/server.test.ts, the package by its new name.
 
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
@@ -30,7 +26,6 @@ test("a page's stylesheet applies and its module scripts run, a dep and its sibl
   try {
     assert.equal(await until(page, "window.app", 5000), "alpha beta gamma");
     assert.equal(await page.evaluate("getComputedStyle(document.body).marginTop"), "7px");
-    // The browser saw the server's types, not ones it sniffed.
     const types: Record<string, string> = await page.evaluate(
       `Object.fromEntries(performance.getEntriesByType("resource").map((entry) => [new URL(entry.name).pathname, entry.contentType]))`,
     );

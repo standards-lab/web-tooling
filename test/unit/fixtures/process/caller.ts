@@ -1,5 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/fixtures/process/caller.ts, importing
-// the package by its new name.
+// Adapted from spike-html-apps-tooling (d77877b): test/unit/fixtures/process/caller.ts, the package by its new name.
 // A caller that starts the fixture server through the process helper, prints the group's pid and
 // the server's pids, as JSON, once it is ready, and never stops it: with CALLER_END=exit it then
 // exits, and otherwise it waits, with no listener of its own, for the signal that ends it.
