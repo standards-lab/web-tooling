@@ -44,8 +44,9 @@ The architecture pages that apply, in the architecture repository:
   description plus `See` lines. A lint directive carries its reason as its `--` description.
 - A copied file names each source repository and commit in one provenance line per source, which
   reads `From|Adapted from <repo> (<commit>): <path>`, plus at most a short clause naming what
-  changed, never why. It names the immediate source alone; that source keeps the earlier lines.
-  A JSON file, which takes no comment, has its line in `context/README.md`.
+  changed, never why, and a third-party source's licence after a semicolon. The lines its immediate
+  source carried for earlier sources stay beside that source's own. A JSON file, which takes no
+  comment, has its line in `context/README.md`.
 - Sources use `.ts` relative specifiers, which tsc rewrites.
 - Tests are TypeScript run under Node's type stripping, erasable syntax only, type-checked by
   `tsconfig.test.json`; browser-served fixtures, and the stub a test runs from a PATH, stay `.js`.

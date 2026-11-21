@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# From web-app-sdk (35d1ab5): scripts/lint-marathon.sh.
 # Runs marathon's lint-context and lint-references, both, and exits 1 if either fails or is not on
 # PATH, naming mise run install for a missing one.
 set -euo pipefail
