@@ -6,7 +6,7 @@ a package and its dependencies to it, starts the processes a test needs, and cap
 of a page set in light and dark. It has no runtime dependencies and needs no build step to install.
 
 It is the package `@standards-lab/web-tooling`, starting at v0.1.0. Its goals live in the
-coordinator's roadmap (`standards-lab/context/roadmap.toml`, v1.client.stack), and its strategy is
+coordinator's roadmap (`standards-lab/roadmap/index.toml`, v1.client.stack), and its strategy is
 `standards-lab/context/web-client.md`.
 
 ## Release
@@ -15,7 +15,7 @@ A person cuts each release by hand: an annotated `vX.Y.Z` tag on a pack commit, 
 pack and whose one parent is main's merge commit. `release.yml`, dispatched by hand with the pushed
 tag (a tag push reads its workflows from the tagged tree, which holds only the pack), verifies the
 tag, runs the check, holds the tag's tree to a fresh pack, and publishes the GitHub release.
-README.md's "Release" section gives the commands.
+[docs/release.md](../docs/release.md) gives the commands.
 
 ## Provenance
 
@@ -32,10 +32,9 @@ provenance is here:
 
 ## Capability map
 
-- **Browser**: launch a pinned headless browser in a fixed locale, time zone, and viewport, resolving only loopback hosts.
-- **Server**: serve a root, its dependencies, and a shell on a free loopback port, never outside the root.
-- **Process**: start a command in its own process group and wait until its ready URL answers.
-- **Screenshots**: the `web-screenshots` bin, capturing a description's pages light and dark.
-- **Fonts**: `useDejaVu()` runs a test file's browser in a pinned DejaVu font set, for stable text
-  rendering. The consumer pins the `dejavu-fonts-ttf` archive and names its directory in
-  `DEJAVU_FONTS`, as it names the browser in `BROWSER_EXECUTABLE`; the package ships no fonts.
+- **Browser** (built): [src/browser.ts](../src/browser.ts).
+- **Server** (built): [src/server.ts](../src/server.ts).
+- **Process** (built): [src/process.ts](../src/process.ts).
+- **Screenshots** (built): [src/screenshots.ts](../src/screenshots.ts) and
+  [docs/screenshots.md](../docs/screenshots.md).
+- **Fonts** (built): [src/fonts.ts](../src/fonts.ts).
