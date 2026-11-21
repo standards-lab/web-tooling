@@ -1,4 +1,4 @@
-### Screenshots
+# Screenshots
 
 The bin `web-screenshots` captures a consumer's pages in the browser `BROWSER_EXECUTABLE` names:
 

@@ -12,7 +12,7 @@ fail() {
   exit 1
 }
 
-require_node_tooling() {
+require_node_modules() {
   local bin
   for bin in eslint prettier; do
     [[ -x node_modules/.bin/$bin ]] || fail "$bin (devDependencies)"
@@ -20,10 +20,11 @@ require_node_tooling() {
 }
 
 require_browser_at_pin() {
-  local shell pin
+  local shell pin version
   shell=$(mise which chrome-headless-shell 2>/dev/null) || fail "chrome-headless-shell"
   pin=$(mise current http:chrome-headless-shell) || return
-  if [[ "$("$shell" --version)" != *" $pin" ]]; then
+  version=$("$shell" --version) || return
+  if [[ $version != *" $pin" ]]; then
     echo "preflight: $shell isn't chrome-headless-shell $pin; give the pin its own sha256" >&2
     exit 1
   fi
@@ -40,7 +41,10 @@ require_dejavu_at_pin() {
   fi
 }
 
-require_node_tooling
-[[ "${1:-}" == browser ]] || exit 0
-require_browser_at_pin
-require_dejavu_at_pin
+require_node_modules
+case "${1:-}" in
+  browser)
+    require_browser_at_pin
+    require_dejavu_at_pin
+    ;;
+esac

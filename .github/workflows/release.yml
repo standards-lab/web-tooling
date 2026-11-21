@@ -85,7 +85,7 @@ jobs:
           diff -r "$scratch/package" "$scratch/tagged"
           echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
 
-      - name: Create the GitHub release
+      - name: Create the GitHub release of the tag, not of main
         uses: taiki-e/create-gh-release-action@v1.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

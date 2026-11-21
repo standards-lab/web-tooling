@@ -160,8 +160,7 @@ mise run currency  # report every tool, package, and action pin behind its lates
 
 The check lints with ESLint, Prettier, shellcheck, actionlint, and marathon's lint-context and
 lint-references, type-checks the TypeScript sources and the TypeScript tests with tsc, and builds
-`dist/`. The unit tier tests the server and
-the process helper, the latter through a fixture `mise run` task whose server is a grandchild, and
+`dist/`. The unit tier tests the server and the process helper, the latter through a fixture `mise run` task whose server is a grandchild, and
 packs the build to check the pack's shape: the build and nothing else beside the manifest, README,
 and LICENSE, each export's files and the bin packed, the bin executable, and no scripts or runtime
 dependency in the manifest. The browser tier runs the driver, the server, the font sets, and the

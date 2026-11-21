@@ -1,4 +1,4 @@
-### Release
+# Release
 
 A release is an annotated `v<version>` tag on a pack commit: a commit, on no branch, whose tree is
 the pack, the build included, and whose one parent is main's merge commit. The version is the one
