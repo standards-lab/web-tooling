@@ -121,3 +121,10 @@ promises its consumers.
   viewport grows as tall as the page, so every tile lies inside it: Chromium paints a scrolling
   region's scrollbars only inside the viewport, and a capture beyond it would drop them below the
   first screen. The width stays, so the layout doesn't change.
+
+## The screenshot tests' fixture
+
+- **Reports.** A page's `window.report(kind)` posts by a synchronous request, so each line is in
+  the log before the step that made it ends.
+- **A failing run.** `SCREENSHOTS_FAIL=open` makes the narrow page's open step throw, so a test can
+  run the bin to an error.

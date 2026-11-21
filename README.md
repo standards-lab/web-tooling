@@ -180,9 +180,8 @@ publishes.
 
 ## Provenance
 
-The package is seeded by copy from spike-html-apps-tooling at d77877b, itself built on
-spike-html-apps-foundation's scaffold and the spike-html-apps repositories' browser-test and
-screenshot support, and its font set from spike-html-go-wasm at f026de3. Each copied file that takes
+The package is seeded by copy from spike-html-apps-tooling at d77877b, and its font set from
+spike-html-go-wasm at f026de3. Each copied file that takes
 comments names each of its sources in a provenance line; the JSON files, which take none, have
 theirs in [`context/README.md`](context/README.md).
 
