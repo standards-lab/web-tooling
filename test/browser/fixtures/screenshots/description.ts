@@ -1,5 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/fixtures/screenshots/description.ts,
-// importing the package by its new name.
+// Adapted from spike-html-apps-tooling (d77877b): test/browser/fixtures/screenshots/description.ts, the package by its new name.
 // The fixture description the screenshot tests run the bin over: a long page cut into tiles, a
 // page with a focus-start mark and a late custom element, and a viewport state at its own size,
 // served from this directory, with a /log route that appends each page's report to the file
@@ -11,7 +10,6 @@
 import { appendFileSync } from "node:fs";
 import type { Description, Step } from "@standards-lab/web-tooling/screenshots.js";
 
-/** Gives the page window.report and reports each focus, once. */
 const REPORTER = `(() => {
   if (window.report) return;
   window.report = (kind) => {
@@ -33,7 +31,6 @@ const REPORTER = `(() => {
   document.addEventListener("focusin", () => window.report("focus"));
 })()`;
 
-/** Has the page report, as a step, under the kind. */
 const report =
   (kind: string): Step =>
   async (page) => {

@@ -2,7 +2,7 @@
 // A process group's liveness and its ending, which browser.ts and process.ts share: each starts
 // its command as the leader of a group of its own, which every process the command starts joins,
 // so ending the group ends them all.
-// Moved from browser.ts, kill given its signal.
+// See docs/internals.md
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 
@@ -20,10 +20,10 @@ export function alive(group: number): boolean {
       try {
         stat = readFileSync(`/proc/${entry}/stat`, "utf8");
       } catch {
-        continue; // The process ended while the directory was read.
+        continue;
       }
-      // After the command's closing parenthesis: the state, the parent's pid, the group.
-      const [state, , pgrp] = stat.slice(stat.lastIndexOf(")") + 2).split(" ");
+      const afterCommand = stat.slice(stat.lastIndexOf(")") + 2);
+      const [state, , pgrp] = afterCommand.split(" ");
       if (Number(pgrp) === group && state !== "Z" && state !== "X") return true;
     }
     return false;
@@ -40,9 +40,7 @@ export function alive(group: number): boolean {
 export function kill(group: number, signal: NodeJS.Signals = "SIGKILL"): void {
   try {
     process.kill(-group, signal);
-  } catch {
-    // ESRCH: the group is gone already.
-  }
+  } catch {}
 }
 
 /**

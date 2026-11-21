@@ -5,7 +5,6 @@
 
 import { readFileSync, readdirSync } from "node:fs";
 
-/** The process's state, parent, and group, from /proc/<pid>/stat; undefined once it is gone. */
 function stat(pid: number): { state: string; parent: number; group: number } | undefined {
   let text: string;
   try {
@@ -13,8 +12,8 @@ function stat(pid: number): { state: string; parent: number; group: number } | u
   } catch {
     return undefined;
   }
-  // After the command's closing parenthesis: the state, the parent's pid, the group.
-  const [state, parent, group] = text.slice(text.lastIndexOf(")") + 2).split(" ");
+  const afterCommand = text.slice(text.lastIndexOf(")") + 2);
+  const [state, parent, group] = afterCommand.split(" ");
   return { state, parent: Number(parent), group: Number(group) };
 }
 

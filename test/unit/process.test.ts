@@ -1,11 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/process.test.ts, importing the package
-// by its new name.
-// The process helper at the package's seam, imported by the package's own name as a consumer
-// imports it: the fixture server started through a task runner, mise, whose server is a
-// grandchild, ready only once its URL answers 2xx, and stopped with every process it started gone;
-// one that ignores SIGTERM, ended by SIGKILL after the drain; a command that exits first, one that
-// is never ready, and one that never starts, each rejected with what it wrote; a caller that exits
-// or is ended by a signal without stopping it; and freePort, a port a listen takes.
+// Adapted from spike-html-apps-tooling (d77877b): test/unit/process.test.ts, the package by its new name.
 
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -25,18 +18,15 @@ after(() => {
   for (const scratch of scratches) rmSync(scratch, { recursive: true, force: true });
 });
 
-/** A path in a new temporary directory, removed after the run, for the fixture's pids. */
 function pidsFile(): string {
   const scratch = mkdtempSync(join(tmpdir(), "process-test."));
   scratches.push(scratch);
   return join(scratch, "pids.json");
 }
 
-/** The fixture server's pids, as it wrote them. */
 const pidsIn = (path: string): { server: number; child: number } =>
   JSON.parse(readFileSync(path, "utf8"));
 
-/** The fixture server's environment and ready URL on a free port, with its mode and pids file. */
 async function fixtureOptions(mode = "", extra: Record<string, string> = {}) {
   const port = await freePort();
   const pids = pidsFile();
@@ -47,7 +37,6 @@ async function fixtureOptions(mode = "", extra: Record<string, string> = {}) {
   };
 }
 
-/** The status the URL answers. */
 async function status(url: string): Promise<number> {
   const response = await fetch(url, { headers: { connection: "close" } }).catch(() => undefined);
   await response?.body?.cancel();
@@ -60,16 +49,13 @@ describe("a task runner whose server is a grandchild", () => {
     const started = await start("mise", ["run", "dev"], {
       ready,
       cwd: fixture,
-      // A test's fixture config is trusted for the run only.
       env: { ...env, MISE_TRUSTED_CONFIG_PATHS: fixture },
     });
     const { server: served, child } = pidsIn(pids);
     try {
       assert.equal(await status(ready), 200);
-      // Its answers before it was ready were asked and passed over.
       assert.match(started.output(), /^\/ready 503$/m);
       assert.match(started.output(), /^\/ready 200$/m);
-      // mise ran the server, which is no child of the caller's nor the command itself.
       assert.notEqual(served, started.pid);
       assert.notEqual(parent(served), process.pid);
       assert.ok(members(started.pid).includes(served));
@@ -80,7 +66,6 @@ describe("a task runner whose server is a grandchild", () => {
     for (const pid of [started.pid, served, child]) assert.equal(running(pid), false, `${pid}`);
     assert.deepEqual(members(started.pid), []);
     assert.equal(await status(ready), 0);
-    // A second stop resolves as the first did.
     assert.equal(await started.stop(), await started.stop());
   });
 
@@ -105,7 +90,6 @@ describe("a task runner whose server is a grandchild", () => {
 test("stop resolves to 128 plus the signal's number when the signal ends the command", async () => {
   const { ready, env } = await fixtureOptions();
   const started = await start(process.execPath, [server], { ready, env });
-  // The fixture server has no SIGTERM listener, so the group's SIGTERM ends it.
   assert.equal(await started.stop(), 143);
 });
 
@@ -139,10 +123,6 @@ describe("rejects", () => {
   });
 });
 
-/**
- * Runs the fixture caller with CALLER_END, resolving to its exit, the group's and the server's
- * pids it printed, and once it exited. With signal, the caller is sent it once it prints.
- */
 function caller(end: string, signal?: NodeJS.Signals) {
   const pids = pidsFile();
   const child = spawn(process.execPath, [join(fixture, "caller.ts")], {
@@ -164,7 +144,6 @@ function caller(end: string, signal?: NodeJS.Signals) {
   });
 }
 
-/** Resolves once none of the pids is running, or rejects naming those left after 2 s. */
 async function gone(pids: number[]): Promise<void> {
   const deadline = performance.now() + 2000;
   while (pids.some(running)) {
@@ -187,7 +166,6 @@ describe("a caller that never stops it", () => {
   for (const signal of ["SIGTERM", "SIGINT"] as const) {
     test(`ends the group as ${signal}, which it doesn't listen for, ends it`, async () => {
       const result = await caller("wait", signal);
-      // The signal still ends the caller, as it would with no group to end.
       assert.equal(result.signal, signal);
       const { group, server: served, child } = result.pids;
       await gone([group, served, child]);

@@ -1,9 +1,4 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/server.test.ts, importing the package
-// by its new name.
-// The server at the package's seam, imported by the package's own name as a consumer imports it:
-// the root's files and their headers, its refused traversals, the /deps/ packages and their pnpm
-// store siblings, the shell, a handler that claims or passes on, and stop(), each over raw http
-// against a scratch tree, so a request's path reaches the server as it is written.
+// Adapted from spike-html-apps-tooling (d77877b): test/unit/server.test.ts, the package by its new name.
 
 import assert from "node:assert/strict";
 import { request as send } from "node:http";
@@ -12,7 +7,6 @@ import { serve } from "@standards-lab/web-tooling/server.js";
 import type { Server } from "@standards-lab/web-tooling/server.js";
 import { tree } from "../support/tree.ts";
 
-/** A response as get() reads it: its status, two of its headers, and its body. */
 interface Response {
   status: number;
   type?: string;
@@ -20,7 +14,6 @@ interface Response {
   body: string;
 }
 
-/** The response to a request for the path, written as it is, with no client normalizing it. */
 function get(
   origin: string,
   path: string,
@@ -34,7 +27,6 @@ function get(
       response.on("data", (chunk) => (text += chunk));
       response.on("end", () =>
         resolve({
-          // A response the client hands its callback always carries its status.
           status: response.statusCode as number,
           type: response.headers["content-type"],
           cache: response.headers["cache-control"],
@@ -90,7 +82,6 @@ describe("the root", () => {
   });
 
   test("no request reaches a file outside the root, however its path climbs", async () => {
-    // The file beside the root is a real .html file, so only the refusal keeps it from being sent.
     for (const path of [
       "/../outside.html",
       "/%2e%2e/outside.html",
@@ -150,16 +141,12 @@ describe("deps", () => {
   });
 
   test("serves no package it was not given: not one beside a flat package, nor one unnamed", async () => {
-    // other sits beside flat in a flat node_modules, and delta in the store beside alpha's own
-    // store directory, so either would be served if siblings were taken from anywhere but a
-    // pnpm package's store directory.
     for (const path of ["/deps/other/index.js", "/deps/delta/index.js", "/deps/.pnpm/x.js"]) {
       assert.equal((await get(server.origin, path)).status, 404, path);
     }
   });
 
   test("no request leaves its package, however its path climbs", async () => {
-    // secret.js is a real .js file in alpha's store directory, one step above the package.
     for (const path of [
       "/deps/alpha/../secret.js",
       "/deps/alpha/%2e%2e/secret.js",
@@ -301,7 +288,6 @@ describe("handler", () => {
         new Promise((resolve) => setTimeout(() => resolve("waiting"), 200)),
       ]);
       assert.equal(outcome, "waiting");
-      // stop() closes the connection the hung request holds, which nothing else would.
       await server.stop();
       await assert.rejects(hung, /socket hang up|ECONNRESET/);
     } finally {

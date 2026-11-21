@@ -1,9 +1,4 @@
-// Adapted from spike-html-go-wasm (f026de3): test/browser/site-nav-layout.test.ts, running
-// fonts-suite.ts, with useDejaVu's refusal of an unset DEJAVU_FONTS.
-// The font set in the machine's fonts, the default when the test file chooses none: fonts-suite.ts's
-// tests, as that suite says. fonts-dejavu.test.ts runs the same suite in the pinned DejaVu set.
-// useDejaVu() with no DEJAVU_FONTS throws before it changes anything, so the machine's fonts stay
-// this file's set.
+// Adapted from spike-html-go-wasm (f026de3): test/browser/site-nav-layout.test.ts, running fonts-suite.ts, with useDejaVu's refusal of no DEJAVU_FONTS.
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";

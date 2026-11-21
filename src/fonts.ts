@@ -1,9 +1,8 @@
-// Adapted from spike-html-go-wasm (f026de3): test/browser/fonts.ts, as a package export that names
-// the archive's install by DEJAVU_FONTS for any consumer, not the spike's browser task alone.
+// Adapted from spike-html-go-wasm (f026de3): test/browser/fonts.ts, a package export, its install in DEJAVU_FONTS.
 // The browser tier's font sets, which a test file chooses before it launches the browser: the
 // machine's, the browser's own fontconfig, by default; or, by useDejaVu(), the six faces of
 // Ubuntu's fonts-dejavu-core from the dejavu-fonts-ttf archive the consumer pins and names in
-// DEJAVU_FONTS, so every machine, local or CI, also proves a page in one known font set.
+// DEJAVU_FONTS, one known font set on every machine, local or CI.
 
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -16,17 +15,14 @@ export interface Fonts {
   families?: { sans: string; mono: string };
 }
 
-/** The machine's fonts, the browser's own fontconfig. */
 const MACHINE: Fonts = { name: "the machine's fonts" };
 
-/** DejaVu, as useDejaVu() sets it up. */
 const DEJAVU: Fonts = {
   name: "DejaVu",
   families: { sans: "DejaVu Sans", mono: "DejaVu Sans Mono" },
 };
 
-/** The six faces of Ubuntu's fonts-dejavu-core, as files in the archive's ttf/. */
-const CORE = [
+const DEJAVU_CORE = [
   "DejaVuSans.ttf",
   "DejaVuSans-Bold.ttf",
   "DejaVuSansMono.ttf",
@@ -35,8 +31,7 @@ const CORE = [
   "DejaVuSerif-Bold.ttf",
 ];
 
-/** Each generic family a font stack ends on, and the DejaVu family it resolves to. */
-const GENERICS = {
+const DEJAVU_FOR_GENERIC = {
   "system-ui": "DejaVu Sans",
   "sans-serif": "DejaVu Sans",
   monospace: "DejaVu Sans Mono",
@@ -48,8 +43,7 @@ let active = MACHINE;
 /** The font set this test process draws in. */
 export const fonts = (): Fonts => active;
 
-/** XML's escape of a path or a name in the fontconfig. */
-const xml = (text: string) =>
+const escapeXml = (text: string) =>
   text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /**
@@ -70,12 +64,14 @@ export function useDejaVu(): () => void {
   const ttf = join(installed, "ttf");
   const dir = mkdtempSync(join(tmpdir(), "dejavu-fonts-"));
   const file = join(dir, "fonts.conf");
-  const accepted = CORE.map((font) => `      <glob>${xml(join(ttf, font))}</glob>`).join("\n");
-  const aliases = Object.entries(GENERICS)
+  const accepted = DEJAVU_CORE.map(
+    (font) => `      <glob>${escapeXml(join(ttf, font))}</glob>`,
+  ).join("\n");
+  const aliases = Object.entries(DEJAVU_FOR_GENERIC)
     .map(
       ([generic, family]) =>
         `  <alias binding="same">\n    <family>${generic}</family>\n` +
-        `    <prefer><family>${xml(family)}</family></prefer>\n  </alias>`,
+        `    <prefer><family>${escapeXml(family)}</family></prefer>\n  </alias>`,
     )
     .join("\n");
   writeFileSync(
@@ -83,21 +79,20 @@ export function useDejaVu(): () => void {
     `<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
 <fontconfig>
-  <dir>${xml(ttf)}</dir>
-  <cachedir>${xml(join(dir, "cache"))}</cachedir>
+  <dir>${escapeXml(ttf)}</dir>
+  <cachedir>${escapeXml(join(dir, "cache"))}</cachedir>
   <selectfont>
     <acceptfont>
 ${accepted}
     </acceptfont>
     <rejectfont>
-      <glob>${xml(join(ttf, "*"))}</glob>
+      <glob>${escapeXml(join(ttf, "*"))}</glob>
     </rejectfont>
   </selectfont>
 ${aliases}
 </fontconfig>
 `,
   );
-  // launch() spawns the browser in this process's environment, so the browser reads it.
   process.env.FONTCONFIG_FILE = file;
   active = DEJAVU;
   return () => rmSync(dir, { recursive: true, force: true });

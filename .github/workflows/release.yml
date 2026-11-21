@@ -1,15 +1,8 @@
-# Publishes the release a vX.Y.Z tag cuts, dispatched by hand with the tag once it is pushed. The
-# tag is cut by hand, as README.md's Release gives it: on a pack commit whose tree is the pack and
-# whose one parent is a merge commit on main. A tag push can't run it: GitHub reads a tag push's
-# workflows from the tagged tree, which holds only the pack, so it runs from main's copy instead.
-# The workflow runs the check on that parent, which builds dist/, packs it, holds the tag's tree to
-# that pack and the tag to package.json's version, and creates a GitHub release from CHANGELOG.md
-# with the tarball attached.
-# Adapted from spike-html-apps-tooling (d77877b): .github/workflows/release.yml, dispatched by hand
-# with the tag a person pushes instead of cutting it on a push to main, since a tag push reads its
-# workflows from the tagged tree, the pack; the tag held to a pack commit on main's merge commit,
-# its pins at their latest.
+# Adapted from spike-html-apps-tooling (d77877b): .github/workflows/release.yml, dispatched by hand with a pushed tag.
 # Adapted from spike-html-apps-foundation (9c15b8d): .github/workflows/release.yml, renamed.
+# Publishes the release a pushed vX.Y.Z tag cuts, dispatched by hand with the tag.
+# See README.md
+# See docs/development.md
 name: Release
 
 on:
@@ -30,8 +23,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      # Every branch and tag, so the pack commit's parent and main are both at hand.
-      - uses: actions/checkout@v7.0.1
+      - name: Check out every branch and tag
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -52,7 +45,6 @@ jobs:
             echo "$TAG's commit has ${#parents[@]} parents, not one" >&2
             exit 1
           fi
-          # The parent is main's merge commit, so it has two parents of its own.
           read -r -a line <<< "$(git rev-list --parents -n 1 "${parents[0]}")"
           grandparents=$(( ${#line[@]} - 1 ))
           if [[ $grandparents -ne 2 ]]; then
@@ -88,14 +80,11 @@ jobs:
           pnpm pack --pack-destination "$scratch"
           tarball=$(ls "$scratch"/*.tgz)
           tar -xzf "$tarball" -C "$scratch"
-          # The tagged tree is the tarball's package/, file for file.
           mkdir "$scratch/tagged"
           git archive "refs/tags/$TAG" | tar -x -C "$scratch/tagged"
           diff -r "$scratch/package" "$scratch/tagged"
           echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
 
-      # The action releases the tag its ref names, not the dispatching ref, main. It runs gh release
-      # create on that tag with no target, so the release is for the tag fetched and checked above.
       - name: Create the GitHub release
         uses: taiki-e/create-gh-release-action@v1.12.0
         with:

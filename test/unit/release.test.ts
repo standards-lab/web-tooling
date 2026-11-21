@@ -1,11 +1,5 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/release.test.ts, for the web-screenshots
-// bin, with the pack's exports and bin named and each export held to packed files.
-// The release's integrity: a pnpm pack of the build, extracted, against the sources, the
-// manifest's install fields, exports, and bin, and its license, by release.ts's releaseProblems,
-// as it stands and in scratch copies with one fault each. It packs the dist/ that mise run build
-// writes.
-// Adapted from spike-html-apps-foundation (9c15b8d): test/unit/release.test.js, in TypeScript,
-// with no brotli budget, since nothing the package ships loads in a page.
+// Adapted from spike-html-apps-tooling (d77877b): test/unit/release.test.ts, for the web-screenshots bin, each export held to packed files.
+// Adapted from spike-html-apps-foundation (9c15b8d): test/unit/release.test.js, in TypeScript, with no brotli budget.
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -27,14 +21,12 @@ const root = join(import.meta.dirname, "../..");
 const src = join(root, "src");
 const scratches: string[] = [];
 
-/** A new temporary directory, removed after the run. */
 function scratchDir(): string {
   const scratch = mkdtempSync(join(tmpdir(), "release-"));
   scratches.push(scratch);
   return scratch;
 }
 
-// The pack under test: pnpm pack's tarball, extracted, its package/ directory.
 let pack: string;
 before(() => {
   const scratch = scratchDir();
@@ -47,10 +39,8 @@ after(() => {
   for (const scratch of scratches) rmSync(scratch, { recursive: true, force: true });
 });
 
-/** A change to a scratch copy of the pack, its directory and its parsed manifest. */
 type Change = (dir: string, manifest: Record<string, unknown>) => void;
 
-/** A scratch copy of the pack, `change` applied to it and its manifest, and its problems. */
 function faulted(change: Change): string[] {
   const copy = join(scratchDir(), "package");
   cpSync(pack, copy, { recursive: true });
@@ -60,7 +50,6 @@ function faulted(change: Change): string[] {
   return releaseProblems(copy, src);
 }
 
-/** The change that removes the file at `path`. */
 const remove =
   (path: string): Change =>
   (dir) =>

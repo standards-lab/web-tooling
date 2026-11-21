@@ -1,6 +1,6 @@
-# Adapted from spike-html-apps-tooling (d77877b): .github/workflows/ci.yml, its pins at their
-# latest. mise run install installs every pin mise.toml names, the DejaVu fonts included.
+# Adapted from spike-html-apps-tooling (d77877b): .github/workflows/ci.yml, its pins at their latest.
 # From spike-html-apps-foundation (9c15b8d): .github/workflows/ci.yml.
+# The check on each pull request to main and each push to it, every pin installed first.
 
 name: CI
 

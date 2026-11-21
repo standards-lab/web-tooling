@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # From spike-html-apps-tooling (d77877b): scripts/build.sh.
-# The build: src/ into a fresh dist/. tsc emits each module's .js and .d.ts. It keeps the bin's
-# shebang but writes no file executable; pnpm pack sets a bin's mode in the tarball, but the browser
-# tier runs dist/'s bin as it is, so the build sets it.
-# Adapted from spike-html-apps-foundation (9c15b8d): scripts/build.sh, with no copied files and the
-# bin's mode.
+# Adapted from spike-html-apps-foundation (9c15b8d): scripts/build.sh, with no copied files and the bin's mode.
+# The build: src/ into a fresh dist/, tsc's emit, the bin made executable.
+# See docs/development.md
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
