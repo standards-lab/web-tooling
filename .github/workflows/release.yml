@@ -70,7 +70,7 @@ jobs:
             exit 1
           fi
 
-      - uses: jdx/mise-action@v5.2.9
+      - uses: jdx/mise-action@v5.2.10
 
       - name: mise run install
         run: mise run install
