@@ -3,9 +3,9 @@
 // page with a focus-start mark and a late custom element, and a viewport state at its own size,
 // served from this directory, with a /log route that appends each page's report to the file
 // SCREENSHOTS_LOG names. Its prepare step gives each page window.report(kind), which posts what the
-// page shows, its focused element, its root's attributes, and its scheme, by a synchronous request,
-// so each line is written before the step that made it ends; every focus reports itself. With
-// SCREENSHOTS_FAIL=open, the narrow page's open step throws, so a run can end in an error.
+// page shows, its focused element, its root's attributes, and its scheme; every focus reports
+// itself. With SCREENSHOTS_FAIL=open, the narrow page's open step throws.
+// See docs/internals.md
 
 import { appendFileSync } from "node:fs";
 import type { Description, Step } from "@standards-lab/web-tooling/screenshots.js";

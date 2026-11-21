@@ -5,8 +5,8 @@ tag, as a devDependency: it drives a headless chrome-headless-shell for a browse
 a package and its dependencies to it, starts the processes a test needs, and captures screenshots
 of a page set in light and dark. It has no runtime dependencies and needs no build step to install.
 
-It is the package `@standards-lab/web-tooling`, starting at v0.1.0. Its goals live in the
-coordinator's roadmap (`standards-lab/roadmap/index.toml`, v1.client.stack), and its strategy is
+It is the package `@standards-lab/web-tooling`. Its goals live in the coordinator's roadmap
+(`standards-lab/roadmap/index.toml`, v1.client.stack), and its strategy is
 `standards-lab/context/web-client.md`.
 
 ## Release
