@@ -1,7 +1,8 @@
 # Internals
 
-The reasoning behind web-tooling's machinery, for a reader changing it. What each module promises
-its consumers is in its header, its exports' doc comments, and the [README](../README.md).
+This page gives the reasoning behind web-tooling's modules, for a reader changing them. Each
+module's header, its exports' doc comments, and the [README](../README.md#use) state what it
+promises its consumers.
 
 ## browser.ts: the driver
 

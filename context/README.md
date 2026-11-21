@@ -11,11 +11,9 @@ coordinator's roadmap (`standards-lab/roadmap/index.toml`, v1.client.stack), and
 
 ## Release
 
-A person cuts each release by hand: an annotated `vX.Y.Z` tag on a pack commit, whose tree is the
-pack and whose one parent is main's merge commit. `release.yml`, dispatched by hand with the pushed
-tag (a tag push reads its workflows from the tagged tree, which holds only the pack), verifies the
-tag, runs the check, holds the tag's tree to a fresh pack, and publishes the GitHub release.
-[docs/release.md](../docs/release.md) gives the commands.
+A person cuts each release by hand as an annotated `vX.Y.Z` tag on a pack commit.
+[docs/release.md](../docs/release.md) gives the commands and what `release.yml` checks before it
+publishes.
 
 ## Provenance
 

@@ -64,7 +64,7 @@ Two-way: no release.
 
 ## Progress
 
-slices 0/7 committed · standards — · spec — · editor —
+slices 7/7 committed · standards ✓ · spec ✓ (1 gap: web-icons pointer to web-tooling's screenshots doc) · editor ✓
 
 ## Decisions
 
@@ -72,5 +72,5 @@ None.
 
 ## Pending edits
 
-- coordinator · context/web-client.md:82: "its README, 'Screenshots'" names web-tooling's new docs
-  page for Screenshots.
+- coordinator · context/web-client.md:82: change (its README, "Screenshots") to (its
+  `docs/screenshots.md`), the page web-tooling moved the section to.

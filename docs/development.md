@@ -1,7 +1,7 @@
 # Development
 
-The reasoning behind web-tooling's pins, tasks, scripts, and workflows, for a reader changing them.
-The [README](../README.md)'s Development section gives the tasks to run.
+This page gives the reasoning behind web-tooling's pins, tasks, scripts, and workflows, for a
+reader changing them. The [README](../README.md#development) lists the tasks to run.
 
 ## Pins
 
@@ -39,7 +39,7 @@ The [README](../README.md)'s Development section gives the tasks to run.
   last.
 - **typescript** against the newest version typescript-eslint's peer range accepts, every other
   package against its latest.
-- **Actions** each against its repository's latest release; none while there is no workflow.
+- **Actions** each against its repository's latest release, when the repository has a workflow.
 
 ## Tasks and their configuration
 
