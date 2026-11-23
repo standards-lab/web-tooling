@@ -1,5 +1,3 @@
-<!-- Adapted from spike-html-apps-tooling (d77877b): README.md, for @standards-lab/web-tooling. -->
-
 # web-tooling
 
 The browser-test and screenshot tooling the standards-lab web client repositories share: a driver
@@ -180,10 +178,7 @@ publishes.
 
 ## Provenance
 
-The package is seeded by copy from spike-html-apps-tooling at d77877b, and its font set from
-spike-html-go-wasm at f026de3. Each copied file that takes comments names each of its sources in a
-provenance line; the JSON files, which take none, have theirs in
-[`context/README.md`](context/README.md).
+The package's lineage is in the workspace's [references catalog](https://github.com/standards-lab/org/blob/main/references.md).
 
 ## License
 

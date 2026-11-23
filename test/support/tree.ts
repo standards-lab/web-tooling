@@ -1,4 +1,3 @@
-// From spike-html-apps-tooling (d77877b): test/support/tree.ts.
 // A scratch tree for the server's tests: a root of pages, scripts, and styles, a file beside the
 // root that no request may reach, and a node_modules laid out as pnpm lays one out, its packages
 // real symlinks into a .pnpm store directory.

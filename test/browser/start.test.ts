@@ -1,5 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/start.test.ts, with the bin by its new name.
-
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// From spike-html-apps-tooling (d77877b): test/browser/fixtures/screenshots/stub.js.
 // A stub for a command the screenshot bin runs, linked into a test's PATH under the command's
 // name, kitten, kitty, or xdg-open: it appends a line to the file STUB_LOG names, its name, its
 // arguments, and whether its stdout is a terminal and /dev/tty opens, so a test sees what reached

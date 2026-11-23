@@ -1,6 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/release.test.ts, for the web-screenshots bin, each export held to packed files.
-// Adapted from spike-html-apps-foundation (9c15b8d): test/unit/release.test.js, in TypeScript, with no brotli budget.
-
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {

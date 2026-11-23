@@ -1,4 +1,3 @@
-// From spike-html-apps-tooling (d77877b): test/unit/fixtures/process/server.ts.
 // The fixture server the process helper's tests start, directly or as mise.toml's dev task, which
 // mise runs as its child, so the server is the helper's grandchild. It starts a child of its own,
 // a process the helper never sees, and writes both pids, as JSON, to the file PIDS names. Its

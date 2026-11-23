@@ -1,5 +1,3 @@
-// From spike-html-apps-tooling (d77877b): tsconfig.json.
-// Adapted from spike-html-apps-foundation (9c15b8d): tsconfig.json, on node.
 // The build, src/ into dist/, each module's .js and .d.ts; mise run types checks it with --noEmit.
 {
   "compilerOptions": {

@@ -1,5 +1,3 @@
-// From spike-html-apps-tooling (d77877b): tsconfig.test.json.
-// Adapted from spike-html-apps-foundation (7e5d6c2): tsconfig.test.json, with checkJs.
 // The type check of the suite, mise run types:test: the tests, their helpers, the fixture stub, and
 // the lint's config, against dist/ as a consumer's code is.
 // See docs/development.md

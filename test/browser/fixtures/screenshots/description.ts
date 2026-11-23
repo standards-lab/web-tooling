@@ -1,4 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/fixtures/screenshots/description.ts, the package by its new name.
 // The fixture description the screenshot tests run the bin over: a long page cut into tiles, a
 // page with a focus-start mark and a late custom element, and a viewport state at its own size,
 // served from this directory, with a /log route that appends each page's report to the file

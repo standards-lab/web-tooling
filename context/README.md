@@ -17,16 +17,7 @@ publishes.
 
 ## Provenance
 
-The package is seeded by copy from spike-html-apps-tooling at d77877b, with the font set from
-spike-html-go-wasm at f026de3. Both spikes are archived and never a dependency. Each copied file
-that takes comments names each of its sources in a provenance line. The JSON files take no comment,
-so their provenance is here:
-
-- `package.json` is adapted from spike-html-apps-tooling (d77877b): package.json. It is renamed
-  `@standards-lab/web-tooling` at 0.1.0, its pins are at their latest, and its bin is named
-  `web-screenshots`.
-- `.prettierrc.json` is from spike-html-apps-tooling (d77877b): .prettierrc.json.
-- `pnpm-lock.yaml` is generated, not copied.
+The package's lineage is in the workspace's [references catalog](https://github.com/standards-lab/org/blob/main/references.md).
 
 ## Capability map
 

@@ -1,4 +1,3 @@
-// From spike-html-apps-tooling (d77877b): test/support/processes.ts.
 // What a test reads of the system's processes, from Linux's /proc: whether a pid is running, a
 // zombie counting as gone, as it is dead and only waits to be reaped; its parent; and the running
 // members of a process group.

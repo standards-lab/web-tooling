@@ -1,4 +1,3 @@
-// From spike-html-apps-tooling (d77877b): src/group.ts.
 // A process group's liveness and its ending, which browser.ts and process.ts share: each starts
 // its command as the leader of a group of its own, which every process the command starts joins,
 // so ending the group ends them all.

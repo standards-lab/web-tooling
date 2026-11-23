@@ -1,5 +1,3 @@
-# Adapted from spike-html-apps-tooling (d77877b): .github/workflows/release.yml, dispatched by hand with a pushed tag.
-# Adapted from spike-html-apps-foundation (9c15b8d): .github/workflows/release.yml, renamed.
 # Publishes the release a pushed vX.Y.Z tag cuts, dispatched by hand with the tag.
 # See docs/release.md
 # See docs/development.md

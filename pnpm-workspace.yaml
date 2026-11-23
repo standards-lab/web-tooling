@@ -1,4 +1,3 @@
-# From spike-html-apps-tooling (d77877b): pnpm-workspace.yaml.
 # pnpm's settings for mise run install, for a repository of one package.
 # See docs/development.md
 minimumReleaseAge: 0

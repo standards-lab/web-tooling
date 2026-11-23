@@ -1,5 +1,3 @@
-// From spike-html-apps-tooling (d77877b): eslint.config.js.
-// Adapted from spike-html-apps-foundation (9c15b8d): eslint.config.js, node's globals, no layer table.
 // The lint the check runs, on node: the recommended rules, typescript-eslint's, every directive's
 // description, and the sources' imports held to node's own modules and the package's files.
 // See architecture/principles/comments.md

@@ -1,6 +1,3 @@
-# Adapted from spike-html-apps-tooling (d77877b): mise.toml, its pins at their latest.
-# Adapted from spike-html-apps-foundation (7e5d6c2): mise.toml, with no demo or screenshots task.
-# Adapted from spike-html-go-wasm (f026de3): mise.toml, its http:dejavu-fonts pin.
 # The tooling's pins and tasks.
 # See docs/development.md
 [settings]
