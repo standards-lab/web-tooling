@@ -22,9 +22,9 @@ reader changing them. The [README](../README.md#development) lists the tasks to 
   archive's LICENSE holds its license: Bitstream Vera's, with DejaVu's changes in the public
   domain.
 - **pnpm's release age.** In `pnpm-workspace.yaml`, `minimumReleaseAge: 0` is Web Elemental's
-  [narrowing](../../architecture/standards/web-elemental/principles/packages-and-releases.md#pins)
+  [narrowing](https://github.com/standards-lab/architecture/blob/main/standards/web-elemental/principles/packages-and-releases.md#pins)
   of rolling currency's [Why a release installs the day it
-  ships](../../architecture/principles/rolling-currency.md#why-a-release-installs-the-day-it-ships).
+  ships](https://github.com/standards-lab/architecture/blob/main/principles/rolling-currency.md#why-a-release-installs-the-day-it-ships).
 
 ## Currency
 
