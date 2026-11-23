@@ -1,5 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/screenshots.test.ts, the package and bin by their new names, node linked into a stub's PATH.
-
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import {

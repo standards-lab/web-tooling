@@ -1,7 +1,3 @@
-// From spike-html-apps-tooling (d77877b): src/browser.ts.
-// Adapted from spike-html-apps-components (2fded6d): test/browser/support/browser-pipe.js, in TypeScript.
-// Adapted from spike-html-apps (a6ff18d): test/browser/support/app.js, its until, rejecting on a throw.
-// From spike-html-apps-components (2fded6d): scripts/screenshots.js, its SETTLED.
 // The browser driver: the browser BROWSER_EXECUTABLE names, over the DevTools Protocol on a pipe,
 // with no package between, its pages, and the waits a test makes on a page.
 // See docs/internals.md

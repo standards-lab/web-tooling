@@ -1,4 +1,3 @@
-# From spike-html-apps-tooling (d77877b): test/unit/fixtures/process/mise.toml.
 # The fixture task runner the process helper's tests start, its tools the repository's.
 [tasks.dev]
 description = "Run the fixture server as mise's child, a grandchild of the process helper's caller"

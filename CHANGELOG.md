@@ -1,6 +1,3 @@
-<!-- Adapted from spike-html-apps-tooling (d77877b): CHANGELOG.md, for @standards-lab/web-tooling,
-with none of the spike's versions. -->
-
 # Changelog
 
 All notable changes to `@standards-lab/web-tooling` are documented here. The format follows

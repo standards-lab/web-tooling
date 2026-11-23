@@ -1,5 +1,3 @@
-// Adapted from spike-html-go-wasm (f026de3): test/browser/site-nav-layout.test.ts, running fonts-suite.ts, with useDejaVu's refusal of no DEJAVU_FONTS.
-
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 

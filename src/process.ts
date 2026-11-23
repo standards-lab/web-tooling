@@ -1,4 +1,3 @@
-// From spike-html-apps-tooling (d77877b): src/process.ts.
 // The process helper: a command that serves an app, started in a process group of its own, ready
 // once a URL answers 2xx over HTTP, and stopped by ending the whole group, so a server it starts
 // as a grandchild ends with it; and freePort.

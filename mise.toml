@@ -1,16 +1,13 @@
-# Adapted from spike-html-apps-tooling (d77877b): mise.toml, its pins at their latest.
-# Adapted from spike-html-apps-foundation (7e5d6c2): mise.toml, with no demo or screenshots task.
-# Adapted from spike-html-go-wasm (f026de3): mise.toml, its http:dejavu-fonts pin.
 # The tooling's pins and tasks.
 # See docs/development.md
 [settings]
 task.run_auto_install = false
 
 [tools]
-"github:standards-lab/claude-plugins" = { version = "0.22.0", version_prefix = "marathon/v" }
+"github:standards-lab/claude-plugins" = { version = "0.24.0", version_prefix = "marathon/v" }
 actionlint = "1.7.12"
 node = "26.13.1"
-pnpm = "12.21.0"
+pnpm = "12.23.0"
 shellcheck = "0.11.0"
 "github:microsoft/typescript-go" = { version = "7.0.2", version_prefix = "typescript/v", bin_path = "package/lib" }
 

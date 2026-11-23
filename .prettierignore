@@ -1,5 +1,3 @@
-# From spike-html-apps-tooling (d77877b): .prettierignore.
-# Adapted from spike-html-apps-foundation (9c15b8d): .prettierignore, with no stylesheets.
 # Prettier's files: the code and the JSON only.
 # See docs/development.md
 *

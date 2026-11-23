@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Adapted from spike-html-apps-tooling (d77877b): scripts/currency.sh, action pins only with a workflow, DejaVu by its assets.
-# From spike-html-apps-foundation (9c15b8d): scripts/currency.sh.
 # Prints `<where>: <item> <pin> -> <latest>` for each mise tool, package.json dependency, and GitHub
 # Actions pin behind its latest, and exits 1 if any; prints nothing when all are current. Reads the
 # network.

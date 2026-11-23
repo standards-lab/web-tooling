@@ -1,7 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): src/screenshots.ts, the bin named web-screenshots.
-// Adapted from spike-html-apps-components (8ba2be0): scripts/screenshots.js and scripts/screenshots.sh, in TypeScript.
-// Adapted from spike-html-apps-foundation (6e9669f): scripts/screenshots.js and scripts/screenshots.sh, in TypeScript.
-// Adapted from spike-html-apps-noctis (7d7351a): scripts/screenshots.js and scripts/screenshots.sh, in TypeScript.
 // The screenshot command's engine, which bin/screenshots.ts runs: the consumer's description
 // module, the first argument, typed as Description, gives the pages, states, facets, and server,
 // and the flags choose the profiles, pages, schemes, and output. Each capture is a fresh page,

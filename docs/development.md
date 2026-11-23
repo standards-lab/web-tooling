@@ -21,11 +21,10 @@ reader changing them. The [README](../README.md#development) lists the tasks to 
   bump, and preflight holds the archive's README, which names its version, to the pin. The
   archive's LICENSE holds its license: Bitstream Vera's, with DejaVu's changes in the public
   domain.
-- **pnpm's release age.** `minimumReleaseAge: 0` in `pnpm-workspace.yaml` turns off pnpm's default
-  wait of a day before it installs a release. The currency task moves each pin to its latest
-  release, and that release's notes are read before the bump lands, a review that stands in for
-  the age gate; with the wait on, a frozen install of a lockfile that pins a release under a day
-  old fails.
+- **pnpm's release age.** In `pnpm-workspace.yaml`, `minimumReleaseAge: 0` is Web Elemental's
+  [narrowing](https://github.com/standards-lab/architecture/blob/main/standards/web-elemental/principles/packages-and-releases.md#pins)
+  of rolling currency's [Why a release installs the day it
+  ships](https://github.com/standards-lab/architecture/blob/main/principles/rolling-currency.md#why-a-release-installs-the-day-it-ships).
 
 ## Currency
 

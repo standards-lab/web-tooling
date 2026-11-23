@@ -1,6 +1,3 @@
-// From spike-html-apps-tooling (d77877b): src/server.ts.
-// Adapted from spike-html-apps-components (2fded6d): test/browser/support/server.js, in TypeScript.
-// Adapted from spike-html-apps-sdk (ca3089e): test/browser/support/server.js, its deps the consumer's, its routes a handler's.
 // The static server a browser test loads its pages from: a root directory over plain http on the
 // loopback address, each file as it is on disk; under /deps/ the installed packages an import map
 // names; the shell page for any extensionless path, an app's deep links; and a handler offered

@@ -1,4 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/fixtures/start/description.ts, the package by its new name.
 // The fixture description whose server is a start function: it starts its own http server, which
 // serves two pages under /app/, and resolves to an origin with that base path, so a page the bin
 // opens resolves against the start's origin and no other. The start, the stop, and each request

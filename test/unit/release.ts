@@ -1,5 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/release.ts, with each export held to packed files.
-// Adapted from spike-html-apps-foundation (9c15b8d): test/unit/release.js, in TypeScript, no export resolution, the manifest held to no scripts or dependencies.
 // A release's shape: a pack of the build checked against the sources, which a tag's tree installs
 // with no build step, its manifest carrying no scripts and no runtime dependency, each export's
 // files packed, its bin executable, and the Apache 2.0 LICENSE it declares.

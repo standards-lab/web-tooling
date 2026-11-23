@@ -1,5 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/server.test.ts, the package by its new name.
-
 import assert from "node:assert/strict";
 import { request as send } from "node:http";
 import { after, before, describe, test } from "node:test";

@@ -1,4 +1,3 @@
-// Adapted from spike-html-go-wasm (f026de3): test/browser/fonts.ts, a package export, its install in DEJAVU_FONTS.
 // The browser tier's font sets, which a test file chooses before it launches the browser: the
 // machine's, the browser's own fontconfig, by default; or, by useDejaVu(), the six faces of
 // Ubuntu's fonts-dejavu-core from the dejavu-fonts-ttf archive the consumer pins and names in

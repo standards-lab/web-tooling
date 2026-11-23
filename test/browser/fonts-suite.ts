@@ -1,5 +1,3 @@
-// Adapted from spike-html-go-wasm (f026de3): test/browser/site-nav-layout-suite.ts, its drawnIn and its check of the chosen set.
-
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { after, before, describe, test } from "node:test";

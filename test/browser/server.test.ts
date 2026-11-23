@@ -1,5 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/browser/server.test.ts, the package by its new name.
-
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { launch, until } from "@standards-lab/web-tooling/browser.js";

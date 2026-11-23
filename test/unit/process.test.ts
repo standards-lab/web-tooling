@@ -1,5 +1,3 @@
-// Adapted from spike-html-apps-tooling (d77877b): test/unit/process.test.ts, the package by its new name.
-
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
