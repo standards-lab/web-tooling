@@ -1,12 +1,8 @@
-<!-- Adapted from spike-html-apps-tooling (d77877b): STANDARDS.md, for @standards-lab/web-tooling
-and its hand-cut releases. -->
-
 # web-tooling standards
 
 The judgement calls the standards-reviewer applies to web-tooling, beyond what `mise run check`
-enforces: each one line, with a pointer to the architecture page that applies where one does. The
-`standard` task points them at the Web Elemental standard once it is founded
-(`standards-lab/context/web-client.md`, "Toward Web Elemental").
+enforces: each one line, with a pointer to the architecture page that applies where one does.
+web-tooling is a Web Elemental member (`architecture/standards/web-elemental/README.md`).
 
 The architecture pages that apply, in the architecture repository:
 
@@ -23,22 +19,14 @@ The architecture pages that apply, in the architecture repository:
 
 - The package is `@standards-lab/web-tooling`, the browser-test and screenshot tooling the web
   client repositories take as a devDependency; its code and tests name no consumer.
-- `dist/` lives only in a release tag's tree, the pack, never on a branch.
-- Releases are plain `vX.Y.Z` annotated tags on a pack commit parented on main's merge commit, cut
-  by hand on a green check from `package.json`'s version, each with its `CHANGELOG.md` section,
-  and never changed or re-cut; `release.yml`, dispatched by hand with the pushed tag, only
-  verifies and publishes it (`standards-lab/context/web-client.md`, "Packaging and release").
+- Its releases, `dist/`, and pins follow
+  `architecture/standards/web-elemental/principles/packages-and-releases.md`.
 
 ## Code
 
 - A module's or a script's header documents the public contract, what it provides and promises,
   with no reasoning. A script's sections become named functions. A lint directive carries its
   reason as its `--` description.
-- A copied file names each source repository and commit in one provenance line per source, which
-  reads `From|Adapted from <repo> (<commit>): <path>`, plus at most a short clause naming what
-  changed, never why, and a third-party source's licence after a semicolon. The lines its immediate
-  source carried for earlier sources stay beside that source's own. A JSON file, which takes no
-  comment, has its line in `context/README.md`.
 - Sources use `.ts` relative specifiers, which tsc rewrites.
 - Tests are TypeScript run under Node's type stripping, erasable syntax only, type-checked by
   `tsconfig.test.json`; browser-served fixtures, and the stub a test runs from a PATH, stay `.js`.
